@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Home | FlaskCraft Modern Web App{% endblock %}
+{% block meta_description %}Explore our high-performance Flask starter website featuring responsive glassmorphism, multi-page routing, and clean modular code.{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="hero-section" aria-labelledby="hero-title">
+        <div class="tag-badge">
+            <span>✨</span> Modern Multi-Page Flask Website
+        </div>
+        <h1 class="hero-title" id="hero-title">
+            Build Beautiful Web Apps with <span class="gradient-text">Python & Flask</span>
+        </h1>
+        <p class="hero-subtitle">
+            A clean, responsive static website template featuring sleek dark glassmorphism, multi-page routing, and modular template inheritance.
+        </p>
+        <div class="hero-cta-group">
+            <a href="{{ url_for('service') }}" class="btn btn-primary" id="hero-cta-services">
+                <span>Explore Services</span>
+                <span>→</span>
+            </a>
+            <a href="{{ url_for('contact') }}" class="btn btn-secondary" id="hero-cta-contact">
+                <span>Get in Touch</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Feature Cards Grid -->
+    <section class="showcase-grid" id="features" aria-label="Key Features">
+        <article class="glass-card" id="card-performance">
+            <div class="card-icon">⚡</div>
+            <h2 class="card-title">Lightning Fast</h2>
+            <p class="card-desc">
+                Minimalist Python backend powered by Werkzeug and Flask, providing sub-millisecond response times and lightweight execution.
+            </p>
+            <ul class="card-checklist">
+                <li><span class="check">✓</span> Zero unnecessary JS bloat</li>
+                <li><span class="check">✓</span> Instant server-side rendering</li>
+            </ul>
+        </article>
+
+        <article class="glass-card" id="card-design">
+            <div class="card-icon">🎨</div>
+            <h2 class="card-title">Glassmorphic UI</h2>
+            <p class="card-desc">
+                Tailored HSL design system with obsidian dark mode, smooth backdrop blur filters, and glowing ambient gradients.
+            </p>
+            <ul class="card-checklist">
+                <li><span class="check">✓</span> Modern Google typography</li>
+                <li><span class="check">✓</span> Subtle micro-interactions</li>
+            </ul>
+        </article>
+
+        <article class="glass-card" id="card-architecture">
+            <div class="card-icon">🧩</div>
+            <h2 class="card-title">Modular Architecture</h2>
+            <p class="card-desc">
+                Clean Jinja2 template inheritance with base layouts, organized static asset pipelines, and declarative endpoints.
+            </p>
+            <ul class="card-checklist">
+                <li><span class="check">✓</span> Shared base.html layout</li>
+                <li><span class="check">✓</span> Dedicated static/css/ assets</li>
+            </ul>
+        </article>
+    </section>
+
+    <!-- Code Snippet Card -->
+    <section class="code-preview-card" id="code-sample" aria-label="Flask Code Snippet">
+        <div class="code-header">
+            <div class="window-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <span class="file-name">main.py (Multi-Page Routes)</span>
+            <button class="copy-btn" id="btn-copy-code" type="button" onclick="copySnippet()">Copy Code</button>
+        </div>
+        <pre class="code-body"><code id="code-content"><span class="code-keyword">from</span> flask <span class="code-keyword">import</span> Flask, render_template
+
+app = Flask(__name__, template_folder=<span class="code-string">"template"</span>)
+
+<span class="code-decorator">@app.route</span>(<span class="code-string">"/"</span>)
+<span class="code-keyword">def</span> <span class="code-function">home</span>():
+    <span class="code-keyword">return</span> render_template(<span class="code-string">"home.html"</span>)
+
+<span class="code-decorator">@app.route</span>(<span class="code-string">"/about"</span>)
+<span class="code-keyword">def</span> <span class="code-function">about</span>():
+    <span class="code-keyword">return</span> render_template(<span class="code-string">"about.html"</span>)
+
+<span class="code-decorator">@app.route</span>(<span class="code-string">"/service"</span>)
+<span class="code-keyword">def</span> <span class="code-function">service</span>():
+    <span class="code-keyword">return</span> render_template(<span class="code-string">"service.html"</span>)
+
+<span class="code-decorator">@app.route</span>(<span class="code-string">"/contact"</span>)
+<span class="code-keyword">def</span> <span class="code-function">contact</span>():
+    <span class="code-keyword">return</span> render_template(<span class="code-string">"contact.html"</span>)</code></pre>
+    </section>
+
+    <!-- Metrics Overview -->
+    <section class="metrics-bar" id="metrics" aria-label="Key Metrics">
+        <div class="metric-item">
+            <div class="metric-value">4</div>
+            <div class="metric-label">Active Pages</div>
+        </div>
+        <div class="metric-item">
+            <div class="metric-value">100%</div>
+            <div class="metric-label">Responsive Layout</div>
+        </div>
+        <div class="metric-item">
+            <div class="metric-value">&lt; 1ms</div>
+            <div class="metric-label">Render Latency</div>
+        </div>
+    </section>
+
+    <!-- Call to Action Banner -->
+    <section class="cta-banner" aria-label="Call to Action">
+        <h2>Ready to build something extraordinary?</h2>
+        <p>Explore our full suite of digital engineering services or get in touch for custom development solutions.</p>
+        <div class="hero-cta-group">
+            <a href="{{ url_for('contact') }}" class="btn btn-primary" id="cta-contact-btn">Start a Project →</a>
+            <a href="{{ url_for('about') }}" class="btn btn-secondary" id="cta-about-btn">Learn More About Us</a>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function copySnippet() {
+        const code = `from flask import Flask, render_template\n\napp = Flask(__name__, template_folder="template")\n\n@app.route("/")\ndef home():\n    return render_template("home.html")\n\n@app.route("/about")\ndef about():\n    return render_template("about.html")\n\n@app.route("/service")\ndef service():\n    return render_template("service.html")\n\n@app.route("/contact")\ndef contact():\n    return render_template("contact.html")`;
+        navigator.clipboard.writeText(code).then(() => {
+            const btn = document.getElementById('btn-copy-code');
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied! ✨';
+            btn.style.color = '#10b981';
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.color = '';
+            }, 2000);
+        }).catch(err => {
+            console.error('Could not copy code:', err);
+        });
+    }
+</script>
+{% endblock %}

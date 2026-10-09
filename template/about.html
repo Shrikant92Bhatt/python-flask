@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}About Us | FlaskCraft{% endblock %}
+{% block meta_description %}Learn about FlaskCraft's mission to craft performant, elegant web applications using modern Python and minimalist architectures.{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Page Hero -->
+    <section class="hero-section" aria-labelledby="about-title">
+        <div class="tag-badge">
+            <span>🌟</span> About FlaskCraft
+        </div>
+        <h1 class="hero-title" id="about-title">
+            Engineering the Future of <span class="gradient-text">Web Technology</span>
+        </h1>
+        <p class="hero-subtitle">
+            We craft high-performance, elegant web platforms by merging robust Python micro-frameworks with sleek, modern design systems.
+        </p>
+    </section>
+
+    <!-- Two-Column Story & Timeline Layout -->
+    <section class="two-col-layout" aria-label="Our Story and Milestones">
+        <!-- Story / Mission Cards -->
+        <div class="story-card">
+            <article class="glass-card" id="card-mission">
+                <span class="story-badge">Our Mission</span>
+                <h2 class="card-title">Simplicity Without Compromise</h2>
+                <p class="card-desc">
+                    We believe the modern web doesn't need cumbersome overhead or slow dependencies. By harnessing Python Flask with native Vanilla CSS and semantic HTML5, we build lightning-quick websites that respect user privacy, load instantaneously, and scale effortlessly.
+                </p>
+            </article>
+
+            <article class="glass-card" id="card-values">
+                <span class="story-badge">Core Values</span>
+                <h2 class="card-title">Aesthetics & Code Quality</h2>
+                <p class="card-desc">
+                    Every endpoint is engineered with clean structure, strict modularity, and adherence to DRY principles. From dark-glass aesthetics to responsive layouts, we obsess over details so you get a seamless experience out of the box.
+                </p>
+                <ul class="card-checklist">
+                    <li><span class="check">✓</span> 100% standard-compliant HTML5 & CSS</li>
+                    <li><span class="check">✓</span> Lightweight and extensible Python backend</li>
+                    <li><span class="check">✓</span> Responsive and accessible on all viewports</li>
+                </ul>
+            </article>
+        </div>
+
+        <!-- Milestones Timeline -->
+        <div class="glass-card" id="card-timeline">
+            <h2 class="card-title" style="margin-bottom: 2rem;">Our Evolution</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-year">2024</div>
+                    <h3 class="timeline-title">Foundation & Core Routing</h3>
+                    <p class="timeline-desc">
+                        Initial creation of the lightweight boilerplate with Flask WSGI server and Jinja template compilation.
+                    </p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-year">2025</div>
+                    <h3 class="timeline-title">Glassmorphic Design System</h3>
+                    <p class="timeline-desc">
+                        Integration of modern dark mode tokens, fluid typography, and responsive CSS grid architectures.
+                    </p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-year">2026</div>
+                    <h3 class="timeline-title">Multi-Page Static Suite</h3>
+                    <p class="timeline-desc">
+                        Expanded into a full multi-page modular static website platform with dedicated services and contact workflows.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Core Pillars Showcase -->
+    <section class="showcase-grid" aria-label="Our Core Pillars">
+        <article class="glass-card" id="pillar-python">
+            <div class="card-icon">🐍</div>
+            <h3 class="card-title">Pythonic Purity</h3>
+            <p class="card-desc">
+                Clean, readable Python code adhering to PEP 8 standards with zero unnecessary third-party overhead.
+            </p>
+        </article>
+
+        <article class="glass-card" id="pillar-design">
+            <div class="card-icon">✨</div>
+            <h3 class="card-title">Modern Aesthetics</h3>
+            <p class="card-desc">
+                Rich glassmorphic styling, HSL balanced color schemes, and subtle micro-animations that captivate users.
+            </p>
+        </article>
+
+        <article class="glass-card" id="pillar-scalability">
+            <div class="card-icon">🚀</div>
+            <h3 class="card-title">Production Scalable</h3>
+            <p class="card-desc">
+                Built to easily transition from development `app.run()` to production WSGI deployments like Gunicorn or uWSGI.
+            </p>
+        </article>
+    </section>
+
+    <!-- Call to Action Banner -->
+    <section class="cta-banner" aria-label="Explore Services">
+        <h2>Want to see what we can build for you?</h2>
+        <p>Explore our full range of tailored web development, API, and UI design solutions.</p>
+        <div class="hero-cta-group">
+            <a href="{{ url_for('service') }}" class="btn btn-primary" id="about-cta-services">View Our Services →</a>
+            <a href="{{ url_for('contact') }}" class="btn btn-secondary" id="about-cta-contact">Contact Us</a>
+        </div>
+    </section>
+</div>
+{% endblock %}

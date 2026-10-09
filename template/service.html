@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Services | FlaskCraft{% endblock %}
+{% block meta_description %}Discover our full range of web development, Python API engineering, glassmorphic UI design, and performance optimization services.{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="hero-section" aria-labelledby="services-title">
+        <div class="tag-badge">
+            <span>💼</span> Comprehensive Capabilities
+        </div>
+        <h1 class="hero-title" id="services-title">
+            Tailored Digital Solutions for <span class="gradient-text">Modern Brands</span>
+        </h1>
+        <p class="hero-subtitle">
+            From performant multi-page static websites to scalable Python backends, we deliver end-to-end digital experiences designed to convert.
+        </p>
+    </section>
+
+    <!-- Services Grid -->
+    <section class="showcase-grid" aria-label="Our Services">
+        <article class="glass-card" id="service-web-dev">
+            <div class="card-icon">🌐</div>
+            <h2 class="card-title">Full-Stack Web Development</h2>
+            <p class="card-desc">
+                High-performance static and dynamic web applications built with Flask, semantic HTML5, and responsive CSS. Engineered for instant load times and search engine excellence.
+            </p>
+            <ul class="card-checklist">
+                <li><span class="check">✓</span> Jinja2 template inheritance</li>
+                <li><span class="check">✓</span> Cross-browser compatibility</li>
+                <li><span class="check">✓</span> SEO metadata optimization</li>
+            </ul>
+        </article>
+
+        <article class="glass-card" id="service-api">
+            <div class="card-icon">⚙️</div>
+            <h2 class="card-title">REST APIs & Backends</h2>
+            <p class="card-desc">
+                Clean, robust RESTful APIs with structured routing, input validation, and secure endpoints. Ready to connect to any frontend or mobile client.
+            </p>
+            <ul class="card-checklist">
+                <li><span class="check">✓</span> JSON payload handling</li>
+                <li><span class="check">✓</span> Token authentication & security</li>
+                <li><span class="check">✓</span> Database integration ready</li>
+            </ul>
+        </article>
+
+        <article class="glass-card" id="service-ui-ux">
+            <div class="card-icon">🎨</div>
+            <h2 class="card-title">UI/UX & Design Systems</h2>
+            <p class="card-desc">
+                Bespoke design systems with custom HSL tokens, dark-mode glassmorphic aesthetics, and fluid micro-animations that engage and delight your audience.
+            </p>
+            <ul class="card-checklist">
+                <li><span class="check">✓</span> Custom Vanilla CSS architectures</li>
+                <li><span class="check">✓</span> Dark & light theme readiness</li>
+                <li><span class="check">✓</span> Accessible WCAG compliant UI</li>
+            </ul>
+        </article>
+
+        <article class="glass-card" id="service-optimization">
+            <div class="card-icon">⚡</div>
+            <h2 class="card-title">Performance Optimization</h2>
+            <p class="card-desc">
+                Deep analysis and performance tuning to eliminate bottlenecks, minimize asset payload, and achieve pristine 99+ Google Lighthouse scores.
+            </p>
+            <ul class="card-checklist">
+                <li><span class="check">✓</span> Asset minification & caching</li>
+                <li><span class="check">✓</span> Sub-millisecond response latency</li>
+                <li><span class="check">✓</span> Core Web Vitals optimization</li>
+            </ul>
+        </article>
+    </section>
+
+    <!-- Pricing / Engagement Tiers -->
+    <section aria-labelledby="pricing-title" style="margin-top: 5rem;">
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <div class="tag-badge"><span>💎</span> Transparent Plans</div>
+            <h2 class="hero-title" id="pricing-title" style="font-size: 2.5rem;">Flexible Engagement Options</h2>
+            <p class="hero-subtitle">Choose the perfect tier for your project requirements.</p>
+        </div>
+
+        <div class="pricing-grid">
+            <!-- Tier 1 -->
+            <article class="pricing-card" id="pricing-starter">
+                <div>
+                    <div class="pricing-header">
+                        <h3 class="pricing-name">Starter Website</h3>
+                        <div class="pricing-price">
+                            <span>$499</span>
+                            <span class="pricing-period">/ flat</span>
+                        </div>
+                        <p class="pricing-desc">Perfect for small businesses & personal portfolios needing a sleek web presence.</p>
+                    </div>
+
+                    <ul class="pricing-features">
+                        <li><span class="icon">✓</span> Up to 5 static pages</li>
+                        <li><span class="icon">✓</span> Responsive glassmorphic UI</li>
+                        <li><span class="icon">✓</span> Working contact form</li>
+                        <li><span class="icon">✓</span> Fast deployment setup</li>
+                    </ul>
+                </div>
+                <a href="{{ url_for('contact') }}" class="btn btn-secondary btn-block">Choose Starter</a>
+            </article>
+
+            <!-- Tier 2 (Featured) -->
+            <article class="pricing-card featured" id="pricing-pro">
+                <span class="pricing-badge">Most Popular</span>
+                <div>
+                    <div class="pricing-header">
+                        <h3 class="pricing-name">Full Application</h3>
+                        <div class="pricing-price">
+                            <span>$1,299</span>
+                            <span class="pricing-period">/ flat</span>
+                        </div>
+                        <p class="pricing-desc">Comprehensive Flask web app with dynamic routes, API integrations, and database backing.</p>
+                    </div>
+
+                    <ul class="pricing-features">
+                        <li><span class="icon">✓</span> Unlimited modular pages</li>
+                        <li><span class="icon">✓</span> REST API endpoints</li>
+                        <li><span class="icon">✓</span> Database integration (SQL)</li>
+                        <li><span class="icon">✓</span> Admin & analytics panels</li>
+                        <li><span class="icon">✓</span> Priority email support</li>
+                    </ul>
+                </div>
+                <a href="{{ url_for('contact') }}" class="btn btn-primary btn-block">Choose Pro</a>
+            </article>
+
+            <!-- Tier 3 -->
+            <article class="pricing-card" id="pricing-enterprise">
+                <div>
+                    <div class="pricing-header">
+                        <h3 class="pricing-name">Custom Enterprise</h3>
+                        <div class="pricing-price">
+                            <span>Custom</span>
+                        </div>
+                        <p class="pricing-desc">Bespoke software architecture, microservices, and dedicated cloud deployments.</p>
+                    </div>
+
+                    <ul class="pricing-features">
+                        <li><span class="icon">✓</span> Microservice architecture</li>
+                        <li><span class="icon">✓</span> Cloud infrastructure setup</li>
+                        <li><span class="icon">✓</span> Custom security & authentication</li>
+                        <li><span class="icon">✓</span> 24/7 SLA maintenance</li>
+                    </ul>
+                </div>
+                <a href="{{ url_for('contact') }}" class="btn btn-secondary btn-block">Contact Sales</a>
+            </article>
+        </div>
+    </section>
+
+    <!-- Call to Action Banner -->
+    <section class="cta-banner" aria-label="Start Your Project">
+        <h2>Have custom specifications?</h2>
+        <p>Let's discuss how we can tailor our development stack to match your precise business needs.</p>
+        <div class="hero-cta-group">
+            <a href="{{ url_for('contact') }}" class="btn btn-primary" id="services-cta-contact">Request a Quote →</a>
+        </div>
+    </section>
+</div>
+{% endblock %}
