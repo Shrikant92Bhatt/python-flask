@@ -3,6 +3,21 @@
 {% block title %}About Us | FlaskCraft{% endblock %}
 {% block meta_description %}Learn about FlaskCraft's mission to craft performant, elegant web applications using modern Python and minimalist architectures.{% endblock %}
 
+{% block extra_head %}
+<!-- Example of extending base.html head with page-specific CSS -->
+<style>
+    .inheritance-badge {
+        background: rgba(99, 102, 241, 0.15);
+        border: 1px solid var(--primary);
+        color: #a5b4fc;
+        padding: 0.2rem 0.6rem;
+        border-radius: var(--radius-sm);
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <!-- Page Hero -->
@@ -146,6 +161,38 @@
                 Built to easily transition from development `app.run()` to production WSGI deployments like Gunicorn or uWSGI.
             </p>
         </article>
+    </section>
+
+    <!-- Template Inheritance Educational Card -->
+    <section class="code-preview-card" style="margin: 4.5rem 0;" aria-label="Template Inheritance Architecture">
+        <div class="code-header">
+            <div class="window-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <span class="file-name">Jinja2 Template Inheritance Architecture</span>
+            <span class="inheritance-badge">{% raw %}{% extends "base.html" %}{% endraw %}</span>
+        </div>
+        <div style="padding: 2rem; color: var(--text-muted); font-size: 0.95rem; line-height: 1.75;">
+            <p style="margin-bottom: 1.25rem;">
+                <strong style="color: var(--text-main); font-size: 1.05rem;">How Template Inheritance works in this application:</strong>
+            </p>
+            <ol style="margin-left: 1.5rem; display: flex; flex-direction: column; gap: 0.85rem;">
+                <li>
+                    <strong style="color: var(--accent-cyan);">1. Parent Skeleton (base.html):</strong>
+                    Defines the master HTML boilerplate, fonts, CSS links, global navbar, and footer. It reserves placeholders using <code>{% raw %}{% block content %}{% endblock %}{% endraw %}</code> and <code>{% raw %}{% block title %}{% endblock %}{% endraw %}</code>.
+                </li>
+                <li>
+                    <strong style="color: var(--primary);">2. Child Template (about.html):</strong>
+                    Begins with <code>{% raw %}{% extends "base.html" %}{% endraw %}</code> at line 1. It does not repeat the navbar or footer—it only injects its unique page content into the defined blocks.
+                </li>
+                <li>
+                    <strong style="color: var(--accent-emerald);">3. Key Advantage:</strong>
+                    Zero code duplication (DRY principle). If you modify the brand logo, navbar links, or footer in <code>base.html</code>, all pages (<em>Home</em>, <em>About</em>, <em>Services</em>, <em>Contact</em>) update instantly!
+                </li>
+            </ol>
+        </div>
     </section>
 
     <!-- Call to Action Banner -->

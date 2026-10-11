@@ -1,0 +1,34 @@
+<!-- Global Header / Navbar Component -->
+<header class="site-header">
+    <div class="container nav-container">
+        <a href="{{ url_for('home') }}" class="brand-logo" id="nav-brand">
+            <span class="logo-badge">⚡</span>
+            <span>FlaskCraft</span>
+        </a>
+
+        <nav aria-label="Main Navigation">
+            <ul class="nav-links">
+                <li>
+                    <a href="{{ url_for('home') }}" class="nav-link {% if request.path == '/' %}active{% endif %}" id="nav-link-home">Home</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('about') }}" class="nav-link {% if request.path == '/about' %}active{% endif %}" id="nav-link-about">About</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('service') }}" class="nav-link {% if request.path == '/service' %}active{% endif %}" id="nav-link-service">Services</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('contact') }}" class="nav-link {% if request.path == '/contact' %}active{% endif %}" id="nav-link-contact">Contact</a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="nav-actions">
+            <div class="status-indicator" id="server-status">
+                <span class="pulse-dot"></span>
+                <span>Flask Ready</span>
+            </div>
+            <a href="{{ url_for('contact') }}" class="btn btn-primary" id="nav-cta-contact">Get in Touch</a>
+        </div>
+    </div>
+</header>
