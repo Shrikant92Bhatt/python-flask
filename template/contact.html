@@ -58,11 +58,26 @@
 
         <!-- Contact Form Panel -->
         <div class="contact-form-panel">
-            <div id="form-status-alert" class="form-status" role="alert">
-                ✓ <strong>Message Received!</strong> Thank you for reaching out. We will review your message and reply soon.
+            {% if success and submission %}
+            <div id="form-status-alert" class="form-status" style="display: block;" role="alert">
+                ✓ <strong>Message Received!</strong> Thank you for reaching out, {{ submission.name | title }}.
             </div>
 
-            <form id="contact-form" onsubmit="handleFormSubmit(event)">
+            <!-- Dynamic Jinja Receipt Card -->
+            <div class="glass-card" style="margin-bottom: 2rem; border-color: rgba(16, 185, 129, 0.4); padding: 1.5rem;">
+                <h4 style="color: var(--accent-emerald); font-size: 1rem; margin-bottom: 0.75rem;">
+                    ✓ Submission Details (Rendered via Jinja)
+                </h4>
+                <div style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <p><strong>Name:</strong> {{ submission.name | title }}</p>
+                    <p><strong>Email:</strong> {{ submission.email }}</p>
+                    <p><strong>Subject:</strong> {{ submission.subject | capitalize }}</p>
+                    <p><strong>Message:</strong> {{ submission.message }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <form id="contact-form" action="{{ url_for('contact') }}" method="POST">
                 <div class="form-group">
                     <label for="contact-name" class="form-label">Full Name</label>
                     <input type="text" id="contact-name" name="name" class="form-control" placeholder="Jane Doe" required autocomplete="name">
@@ -77,10 +92,9 @@
                     <label for="contact-subject" class="form-label">Subject</label>
                     <select id="contact-subject" name="subject" class="form-control" required>
                         <option value="" disabled selected>Select an inquiry type...</option>
-                        <option value="project">New Project Proposal</option>
-                        <option value="development">Full-Stack Development</option>
-                        <option value="consulting">Architecture Consulting</option>
-                        <option value="general">General Question</option>
+                        {% for opt in inquiry_options %}
+                        <option value="{{ opt.id }}">{{ opt.label }}</option>
+                        {% endfor %}
                     </select>
                 </div>
 
@@ -94,6 +108,24 @@
                     <span>→</span>
                 </button>
             </form>
+
+            {% if submissions %}
+            <div class="glass-card" style="margin-top: 2rem; padding: 1.5rem;">
+                <h4 style="font-size: 1rem; color: var(--text-main); margin-bottom: 0.75rem;">
+                    📋 Recent Inquiries ({{ submissions | length }})
+                </h4>
+                <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.85rem; color: var(--text-muted);">
+                    {% for item in submissions %}
+                    <li style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
+                        <span style="color: var(--primary);">#{{ loop.index }}</span>
+                        <strong style="color: var(--text-main);">{{ item.name | title }}</strong>
+                        ({{ item.email }}) —
+                        <em>{{ item.subject }}</em>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
         </div>
     </section>
 </div>
@@ -114,24 +146,6 @@
         }).catch(err => {
             console.error('Failed to copy email:', err);
         });
-    }
-
-    function handleFormSubmit(event) {
-        event.preventDefault();
-        const submitBtn = document.getElementById('btn-submit-form');
-        const alertBox = document.getElementById('form-status-alert');
-
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span>Sending...</span>';
-
-        // Simulate network processing with polished visual feedback
-        setTimeout(() => {
-            alertBox.style.display = 'block';
-            document.getElementById('contact-form').reset();
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<span>Send Message</span> <span>→</span>';
-            alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 600);
     }
 </script>
 {% endblock %}
