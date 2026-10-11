@@ -44,37 +44,80 @@
             </article>
         </div>
 
-        <!-- Milestones Timeline -->
+        <!-- Milestones Timeline (Dynamic Jinja Loop & if/else) -->
         <div class="glass-card" id="card-timeline">
             <h2 class="card-title" style="margin-bottom: 2rem;">Our Evolution</h2>
             <div class="timeline">
+                {% for item in milestones %}
                 <div class="timeline-item">
                     <div class="timeline-dot"></div>
-                    <div class="timeline-year">2024</div>
-                    <h3 class="timeline-title">Foundation & Core Routing</h3>
-                    <p class="timeline-desc">
-                        Initial creation of the lightweight boilerplate with Flask WSGI server and Jinja template compilation.
-                    </p>
+                    <div class="timeline-year">
+                        {{ item.year }}
+                        <!-- Jinja Conditional Statement (if / else) -->
+                        {% if item.completed %}
+                            <span style="color: var(--accent-emerald); font-size: 0.75rem; margin-left: 0.5rem; font-weight: 600;">✓ Completed</span>
+                        {% else %}
+                            <span style="color: var(--accent-amber); font-size: 0.75rem; margin-left: 0.5rem; font-weight: 600;">⏳ In Progress</span>
+                        {% endif %}
+                    </div>
+                    <h3 class="timeline-title">{{ item.title }}</h3>
+                    <p class="timeline-desc">{{ item.desc }}</p>
                 </div>
-
-                <div class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-year">2025</div>
-                    <h3 class="timeline-title">Glassmorphic Design System</h3>
-                    <p class="timeline-desc">
-                        Integration of modern dark mode tokens, fluid typography, and responsive CSS grid architectures.
-                    </p>
-                </div>
-
-                <div class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-year">2026</div>
-                    <h3 class="timeline-title">Multi-Page Static Suite</h3>
-                    <p class="timeline-desc">
-                        Expanded into a full multi-page modular static website platform with dedicated services and contact workflows.
-                    </p>
-                </div>
+                {% endfor %}
             </div>
+        </div>
+    </section>
+
+    <!-- Team Members Section (Loop with if / elif / else conditionals) -->
+    <section style="margin: 4.5rem 0;" aria-label="Team Members">
+        <div style="text-align: center; margin-bottom: 2.5rem;">
+            <div class="tag-badge"><span>👥</span> Our Team</div>
+            <h2 class="hero-title" style="font-size: 2.4rem;">Meet the Core Builders</h2>
+            <p class="hero-subtitle">Rendered dynamically via Jinja loop with if, elif, and else logic.</p>
+
+            <!-- Jinja Boolean Conditional -->
+            {% if is_hiring %}
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1.25rem; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-full); color: var(--accent-emerald); font-size: 0.85rem; font-weight: 600;">
+                <span class="pulse-dot"></span>
+                <span>We are actively hiring new talent!</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="showcase-grid">
+            <!-- Jinja Loop: for member in team -->
+            {% for member in team %}
+            <article class="glass-card" id="team-member-{{ loop.index }}">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                    <div class="card-icon" style="margin-bottom: 0;">👤</div>
+                    <!-- Jinja Conditional: check boolean flag -->
+                    {% if member.is_lead %}
+                        <span style="background: rgba(99, 102, 241, 0.2); border: 1px solid var(--primary); color: #a5b4fc; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.65rem; border-radius: var(--radius-full);">
+                            ★ Team Lead
+                        </span>
+                    {% endif %}
+                </div>
+
+                <h3 class="card-title">{{ member.name }}</h3>
+                <p style="color: var(--accent-cyan); font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;">{{ member.role }}</p>
+
+                <!-- Jinja Multi-branch Conditional: if / elif / else -->
+                <p style="font-size: 0.85rem; color: var(--text-muted);">
+                    Seniority:
+                    {% if member.experience >= 7 %}
+                        <span style="color: var(--accent-emerald); font-weight: 600;">Senior Veteran ({{ member.experience }}+ yrs)</span>
+                    {% elif member.experience >= 4 %}
+                        <span style="color: var(--accent-cyan); font-weight: 600;">Mid-Level ({{ member.experience }} yrs)</span>
+                    {% else %}
+                        <span style="color: var(--text-dim); font-weight: 600;">Associate ({{ member.experience }} yrs)</span>
+                    {% endif %}
+                </p>
+
+                <p style="font-size: 0.78rem; color: var(--text-dim); margin-top: 0.75rem;">
+                    Member #{{ loop.index }} of {{ loop.length }}
+                </p>
+            </article>
+            {% endfor %}
         </div>
     </section>
 
