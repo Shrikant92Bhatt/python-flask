@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}{{ error_title|default("404 - Page Not Found") }} | FlaskCraft{% endblock %}
+{% block meta_description %}The requested page could not be located. Explore FlaskCraft routes or return home.{% endblock %}
+
+{% block content %}
+<div class="container" id="error-container">
+    <section class="hero-section" aria-labelledby="error-title">
+        <div class="tag-badge">
+            <span>⚠️</span> HTTP {{ error_code|default(404) }} Status
+        </div>
+        <h1 class="hero-title" id="error-title">
+            {{ error_code|default(404) }} <span class="gradient-text">{{ error_title|default("Page Not Found") }}</span>
+        </h1>
+        <p class="hero-subtitle">
+            The resource or URL path you requested does not exist on this server. It may have moved or was entered incorrectly.
+        </p>
+    </section>
+
+    <div class="card glass-card" id="error-details-card">
+        <h2 class="card-title">Where would you like to go next?</h2>
+        <p class="card-text">
+            Use the navigation below to jump directly into the application sections or study guide:
+        </p>
+        <div class="hero-actions" id="error-actions-group">
+            <a href="{{ url_for('home') }}" class="btn btn-primary" id="btn-error-home">
+                Return Home →
+            </a>
+            <a href="{{ url_for('study') }}" class="btn btn-secondary" id="btn-error-study">
+                Open Study Guide 📚
+            </a>
+            <a href="{{ url_for('service') }}" class="btn btn-secondary" id="btn-error-service">
+                View Services 🚀
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

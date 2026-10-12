@@ -138,5 +138,31 @@ def study():
     return render_template("study.html")
 
 
+# Custom Jinja Template Filter demonstration
+@app.template_filter("currency")
+def currency_filter(value):
+    """Formats numeric values as currency strings."""
+    if value is None:
+        return "Custom Quote"
+    return f"${value:,.2f}"
+
+
+# Custom Error Handlers
+@app.errorhandler(404)
+def page_not_found(error):
+    """Handles 404 Not Found errors with content negotiation for API vs Web."""
+    if request.path.startswith("/api/"):
+        return {"success": False, "error": "Endpoint not found", "code": 404}, 404
+    return render_template("404.html", error=error), 404
+
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    """Handles 500 Internal Server Errors defensively."""
+    if request.path.startswith("/api/"):
+        return {"success": False, "error": "Internal server error", "code": 500}, 500
+    return render_template("404.html", error=error, error_code=500, error_title="500 - Internal Server Error"), 500
+
+
 if __name__ == "__main__":
-    app.run(debug=True) 
+    app.run(debug=True)

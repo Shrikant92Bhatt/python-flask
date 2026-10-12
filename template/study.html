@@ -1,7 +1,6 @@
 {% extends "base.html" %}
-
 {% block title %}Flask Comprehensive Study Guide | FlaskCraft{% endblock %}
-{% block meta_description %}In-depth study guide of all Flask concepts learned: routing, Jinja2 loops, conditionals, inheritance, query params, APIs with jsonify, and flash messages.{% endblock %}
+{% block meta_description %}In-depth production-grade study guide covering 20 core Flask & Jinja architectural concepts with detailed mechanics, code examples, pitfalls, and codebase links.{% endblock %}
 
 {% block extra_css %}
 <!-- Page-Specific Modular CSS: Study Guide Page -->
@@ -19,7 +18,7 @@
             Flask & Jinja <span class="gradient-text">Study Guide</span>
         </h1>
         <p class="hero-subtitle">
-            An interactive, comprehensive breakdown of every core concept covered in this project with exact codebase file references and code examples.
+            An interactive, comprehensive technical breakdown of 20 core Flask and Jinja architectural concepts with under-the-hood internal mechanics, step-by-step lifecycles, production code examples, pitfalls, and direct GitHub codebase links.
         </p>
     </section>
 
@@ -31,7 +30,7 @@
                     type="text" 
                     id="study-search-input" 
                     class="form-control study-controls-sub" 
-                    placeholder="🔍 Search concepts (e.g. loops, jsonify, flash, query, inheritance)..."
+                    placeholder="🔍 Search concepts (e.g. routing, loops, jsonify, flash, error handling, session, context)..."
                     onkeyup="filterAccordions()"
                 >
             </div>
@@ -46,10 +45,9 @@
         </div>
     </section>
 
-    <!-- Accordion Study Topics -->
+    <!-- Accordion Study Topics List -->
     <section aria-label="Flask Concepts Accordion" class="study-accordion-list" id="study-accordion-list">
-
-        <!-- 1. Flask App Initialization & WSGI Server -->
+        <!-- 01. Flask Application Setup & WSGI Server -->
         <details class="study-accordion" id="topic-init" open>
             <summary class="accordion-summary">
                 <div class="summary-left">
@@ -62,33 +60,117 @@
                 </div>
             </summary>
             <div class="accordion-body">
-                <p><strong>Concept:</strong> Flask initializes an application object that acts as the central WSGI application. Setting <code>template_folder</code> customizes the Jinja templates directory, and <code>app.secret_key</code> enables secure session cookies required for flash messages.</p>
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>The Web Server Gateway Interface (WSGI, PEP 3333) standardizes communication between Python web applications and web servers. In Flask, <code>Flask(__name__)</code> instantiates the central WSGI application callable. It resolves root filesystem paths, binds application configuration, registers URL routing rules, and configures secure session handling.</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> When an HTTP request reaches the server, the WSGI server invokes <code>app(environ, start_response)</code>. Flask wraps the low-level CGI <code>environ</code> dictionary into a high-level <code>Request</code> object, matches the request URL against its routing map, dispatches execution to the corresponding view function, and converts the return value into a <code>Response</code> byte stream. In local development, <code>app.run(debug=True)</code> launches Werkzeug's local supervisor and child reloader process (using StatReloader or Watchdog). It mounts an interactive browser debugging console protected by a PIN. In production environments, <code>debug=True</code> must never be enabled because it permits arbitrary remote code execution. Instead, a multi-worker production WSGI server like Gunicorn or uWSGI must manage worker concurrency.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Root Path Resolution:</strong> Flask inspects <code>__name__</code> to detect whether it is running as a standalone module or package, accurately determining absolute filesystem paths for templates and static files.</li>
+                    <li><strong>WSGI Callable Registration:</strong> The <code>Flask</code> class implements the Python <code>__call__</code> dunder method to adhere strictly to PEP 3333 WSGI compliance.</li>
+                    <li><strong>Cryptographic Secret Key Configuration:</strong> Assigning <code>app.secret_key</code> provides the cryptographic seed used by the <code>itsdangerous</code> serializer to sign session cookies and flash messages.</li>
+                    <li><strong>Blueprint and Extension Registration:</strong> Modular blueprints (API, Auth, Flash) and extensions are registered onto the central application object before request handling begins.</li>
+                    <li><strong>Server Dispatch & Execution:</strong> Executing <code>app.run()</code> starts the development HTTP server, binding to the configured host and port (default <code>127.0.0.1:5000</code>).</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
                 <div class="code-block-wrapper">
                     <div class="code-header-bar">
-                        <span>main.py</span>
+                        <span>main.py & Production Setup</span>
                     </div>
                     <pre><code>from flask import Flask, render_template, request
+import os
 
-# Create application instance with custom template folder
+# Initialize Flask application with explicit custom template directory
 app = Flask(__name__, template_folder="template")
-app.secret_key = "flaskcraft-dev-secret-key-2026"
+
+# Secret key for cryptographically signing session cookies &amp; flash messages
+# In production, always load from an environment variable:
+app.secret_key = os.environ.get("SECRET_KEY", "flaskcraft-dev-secret-key-2026")
+
+@app.route("/")
+def home():
+    return render_template("home.html")
 
 if __name__ == "__main__":
-    # debug=True enables live auto-reloading and browser debugger
-    app.run(debug=True)</code></pre>
+    # Local development server with auto-reload and traceback console:
+    # WARNING: Never run debug=True in production!
+    app.run(host="127.0.0.1", port=5000, debug=True)
+
+# -------------------------------------------------------------
+# Production WSGI Deployment Command (e.g. Gunicorn):
+# gunicorn --workers 4 --bind 0.0.0.0:5000 --access-logfile - main:app
+# -------------------------------------------------------------</code></pre>
                 </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>Production Debug Vulnerability:</strong> Leaving <code>debug=True</code> enabled on public servers exposes the Werkzeug interactive debugging shell, allowing unauthenticated attackers to execute arbitrary Python commands on your server.<br><strong>Missing Secret Key:</strong> Forgetting <code>app.secret_key</code> will raise a <code>RuntimeError: The session is unavailable because no secret key was set</code> whenever session or flash operations run.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter / Attribute</th>
+                                <th>Type</th>
+                                <th>Purpose</th>
+                                <th>Default Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>import_name</code></td>
+                                <td>str</td>
+                                <td>Identifies root package to resolve template and static asset paths</td>
+                                <td>Mandatory (usually <code>__name__</code>)</td>
+                            </tr>
+                            <tr>
+                                <td><code>template_folder</code></td>
+                                <td>str</td>
+                                <td>Subdirectory path containing Jinja HTML template files</td>
+                                <td><code>'templates'</code> (customized to <code>'template'</code>)</td>
+                            </tr>
+                            <tr>
+                                <td><code>static_folder</code></td>
+                                <td>str</td>
+                                <td>Subdirectory path containing public static assets (CSS, JS, images)</td>
+                                <td><code>'static'</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>secret_key</code></td>
+                                <td>str / bytes</td>
+                                <td>Cryptographic seed for signing session cookies and flash queues</td>
+                                <td><code>None</code> (Must be set for sessions)</td>
+                            </tr>
+                            <tr>
+                                <td><code>debug</code></td>
+                                <td>bool</td>
+                                <td>Activates live file auto-reloader and interactive traceback debugger</td>
+                                <td><code>False</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="file-reference-box">
-                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py">main.py</a>
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py#L1-L15">main.py</a>
+                    <div class="study-quick-links">
+                        <a href="/" target="_blank" class="btn btn-secondary study-quick-btn">Open Home Route (/) →</a>
+                    </div>
                 </div>
             </div>
         </details>
 
-        <!-- 2. Basic URL Routing & View Functions -->
+        <!-- 02. URL Routing, View Functions & Parameter Converters -->
         <details class="study-accordion" id="topic-routing">
             <summary class="accordion-summary">
                 <div class="summary-left">
                     <span class="topic-num">02</span>
-                    <span class="topic-title">URL Routing & View Functions</span>
+                    <span class="topic-title">URL Routing, View Functions & Parameter Converters</span>
                 </div>
                 <div class="summary-right">
                     <span class="badge-tag">main.py</span>
@@ -96,31 +178,113 @@ if __name__ == "__main__":
                 </div>
             </summary>
             <div class="accordion-body">
-                <p><strong>Concept:</strong> Routes map specific URL paths to Python functions using the <code>@app.route()</code> decorator. The return value is sent to the client as an HTTP response.</p>
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>Routing maps incoming HTTP request URL paths to corresponding Python view functions using the <code>@app.route()</code> decorator. Flask leverages Werkzeug's routing engine to compile route definitions into regex patterns, extract dynamic URL path parameters, and validate data types with built-in parameter converters.</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> Under the hood, each <code>@app.route()</code> call constructs a <code>werkzeug.routing.Rule</code> object and registers it inside <code>app.url_map</code> (an instance of <code>werkzeug.routing.Map</code>). When a request arrives, <code>url_map.bind_to_environ(environ)</code> analyzes the requested path against all registered rules. If dynamic converters like <code>&lt;int:id&gt;</code> are present, Werkzeug's converter executes regex matching, casts the path fragment to a Python integer, and injects it as a keyword argument into the view function. Flask strictly follows RFC 3986 URL canonicalization: if a route is defined with a trailing slash (e.g. <code>/projects/</code>), a visit to <code>/projects</code> triggers an automatic HTTP 308 Permanent Redirect. If defined without a trailing slash, requesting with a slash yields an HTTP 404.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Route Registration:</strong> Decorator registers URL path, supported HTTP methods, and endpoint name into <code>app.url_map</code>.</li>
+                    <li><strong>Request URL Matching:</strong> Werkzeug matches incoming request path against compiled regular expression patterns in the routing table.</li>
+                    <li><strong>Type Coercion via Converters:</strong> Path parameters are validated and converted into Python primitives (<code>int</code>, <code>uuid</code>, etc.).</li>
+                    <li><strong>View Function Invocation:</strong> Flask invokes the associated view function, passing extracted path variables as keyword arguments.</li>
+                    <li><strong>Response Transformation:</strong> The function return value (string, template, dict, or tuple) is coerced into an HTTP <code>Response</code> object.</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
                 <div class="code-block-wrapper">
                     <div class="code-header-bar">
-                        <span>main.py</span>
+                        <span>main.py (Route Definitions)</span>
                     </div>
-                    <pre><code>@app.route("/")
+                    <pre><code>from flask import render_template, abort
+
+# 1. Static Route
+@app.route("/")
 def home():
     return render_template("home.html")
 
-@app.route("/about")
-def about():
-    return render_template("about.html", company_name="FlaskCraft")</code></pre>
+# 2. Dynamic Route with Multiple Converters
+@app.route("/projects/&lt;string:category&gt;/&lt;int:project_id&gt;")
+def project_detail(category, project_id):
+    # category is typed as str, project_id is guaranteed to be an int
+    if project_id &lt;= 0:
+        abort(404)
+    return render_template("project.html", category=category, project_id=project_id)
+
+# 3. Path Converter (matches across multiple slashes)
+@app.route("/docs/&lt;path:subpath&gt;")
+def documentation(subpath):
+    return render_template("docs.html", doc_path=subpath)</code></pre>
                 </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>String vs Integer Casting:</strong> Omitting the converter type (e.g. <code>&lt;user_id&gt;</code> instead of <code>&lt;int:user_id&gt;</code>) passes the parameter as a string, causing bugs in database lookups or mathematical checks.<br><strong>Trailing Slash Inconsistencies:</strong> Navigating to <code>/service/</code> when the route is defined as <code>/service</code> returns a 404 error instead of redirecting.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Converter</th>
+                                <th>Syntax</th>
+                                <th>Accepted Input</th>
+                                <th>Python Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>string</code> (default)</td>
+                                <td><code>&lt;string:var&gt;</code></td>
+                                <td>Any text without slashes</td>
+                                <td><code>str</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>int</code></td>
+                                <td><code>&lt;int:var&gt;</code></td>
+                                <td>Positive integers only</td>
+                                <td><code>int</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>float</code></td>
+                                <td><code>&lt;float:var&gt;</code></td>
+                                <td>Positive floating point numbers</td>
+                                <td><code>float</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>path</code></td>
+                                <td><code>&lt;path:var&gt;</code></td>
+                                <td>Accepts slashes and directory sub-paths</td>
+                                <td><code>str</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>uuid</code></td>
+                                <td><code>&lt;uuid:var&gt;</code></td>
+                                <td>Accepts 36-character UUID strings</td>
+                                <td><code>uuid.UUID</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="file-reference-box">
-                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py">main.py</a>
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py#L15-L20">main.py</a>
+                    <div class="study-quick-links">
+                        <a href="/about" target="_blank" class="btn btn-secondary study-quick-btn">Try /about Route →</a>
+                    </div>
                 </div>
             </div>
         </details>
 
-        <!-- 3. HTTP Methods (GET & POST) -->
+        <!-- 03. HTTP Methods Handling (GET, POST & The PRG Pattern) -->
         <details class="study-accordion" id="topic-http-methods">
             <summary class="accordion-summary">
                 <div class="summary-left">
                     <span class="topic-num">03</span>
-                    <span class="topic-title">HTTP Methods Handling (GET & POST)</span>
+                    <span class="topic-title">HTTP Methods Handling (GET, POST & The PRG Pattern)</span>
                 </div>
                 <div class="summary-right">
                     <span class="badge-tag">main.py & contact.html</span>
@@ -128,33 +292,118 @@ def about():
                 </div>
             </summary>
             <div class="accordion-body">
-                <p><strong>Concept:</strong> By default, routes only accept <code>GET</code>. Adding <code>methods=["GET", "POST"]</code> allows a single route to both render a form and process its incoming submission.</p>
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>HTTP methods express the intended action of a request. By default, Flask routes only accept <code>GET</code> requests. Specifying <code>methods=["GET", "POST"]</code> enables a single view function to render an HTML form on initial visit and process incoming form payloads upon submission.</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> When handling a POST submission with <code>application/x-www-form-urlencoded</code> or <code>multipart/form-data</code>, Flask parses the request stream into <code>request.form</code>, an instance of <code>werkzeug.datastructures.ImmutableMultiDict</code>. This data structure is strictly read-only; attempts to mutate keys raise a <code>TypeError</code>. Furthermore, accessing a non-existent key via bracket subscripting <code>request.form["missing"]</code> raises a <code>BadRequestKeyError</code> (which Flask transforms into an HTTP 400 Bad Request). Safe extraction requires <code>request.form.get("key", default=None)</code>. Production form handling should implement the Post/Redirect/Get (PRG) pattern: after processing a successful POST, return an HTTP 302/303 redirect rather than rendering a template directly, preventing the browser from prompting 'Confirm Form Resubmission' if the user refreshes.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Method Declaration:</strong> Pass allowed verbs via <code>methods=["GET", "POST"]</code> in the route decorator.</li>
+                    <li><strong>Method Discrimination:</strong> Check <code>if request.method == "POST":</code> to branch form processing logic away from initial page rendering.</li>
+                    <li><strong>Safe Field Extraction:</strong> Extract values using <code>request.form.get("field_name", "").strip()</code> to avoid unhandled 400 exceptions.</li>
+                    <li><strong>Server-Side Validation:</strong> Verify required inputs, data formats, and business constraints before executing database writes.</li>
+                    <li><strong>PRG Redirect & Flash:</strong> Store a feedback notification with <code>flash()</code> and return <code>redirect(url_for(...))</code>.</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
                 <div class="code-block-wrapper">
                     <div class="code-header-bar">
-                        <span>main.py (Contact route)</span>
+                        <span>main.py (Contact Form Processing)</span>
                     </div>
-                    <pre><code>@app.route("/contact", methods=["GET", "POST"])
+                    <pre><code>from flask import request, render_template, redirect, url_for, flash
+
+@app.route("/contact", methods=["GET", "POST"])
 def contact():
     if request.method == "POST":
-        # Process form submission
-        name = request.form.get("name")
-        return render_template("contact.html", success=True, name=name)
-    
-    # Handle normal page visit
+        # 1. Safely extract form values without throwing BadRequestKeyError
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip()
+        message = request.form.get("message", "").strip()
+
+        # 2. Server-side validation
+        if not name or not email or not message:
+            flash("All form fields are mandatory!", "warning")
+            return render_template("contact.html", name=name, email=email)
+
+        # 3. Process business logic (e.g. database save or email dispatch)
+        save_inquiry(name, email, message)
+
+        # 4. Post/Redirect/Get (PRG) pattern prevents duplicate submissions
+        flash(f"Thank you {name}! Your message has been sent.", "success")
+        return redirect(url_for("contact"))
+
+    # Initial GET request renders clean form
     return render_template("contact.html")</code></pre>
                 </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>Bracket Subscripting Exception:</strong> Using <code>request.form["email"]</code> crashes with an HTTP 400 Bad Request if the user omits or tampers with the form field. Always use <code>request.form.get("email")</code>.<br><strong>Missing PRG Pattern:</strong> Directly calling <code>render_template()</code> upon POST causes browsers to warn about resubmitting data if refreshed or backed into.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>HTTP Method</th>
+                                <th>Idempotent?</th>
+                                <th>Safe?</th>
+                                <th>Primary Use Case in Web Apps</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>GET</code></td>
+                                <td>Yes</td>
+                                <td>Yes</td>
+                                <td>Retrieve and view pages, search results, or read API resources</td>
+                            </tr>
+                            <tr>
+                                <td><code>POST</code></td>
+                                <td>No</td>
+                                <td>No</td>
+                                <td>Submit forms, create new records, authenticate credentials</td>
+                            </tr>
+                            <tr>
+                                <td><code>PUT</code></td>
+                                <td>Yes</td>
+                                <td>No</td>
+                                <td>Completely replace an existing resource with a new payload</td>
+                            </tr>
+                            <tr>
+                                <td><code>PATCH</code></td>
+                                <td>No</td>
+                                <td>No</td>
+                                <td>Partially update specific fields of an existing resource</td>
+                            </tr>
+                            <tr>
+                                <td><code>DELETE</code></td>
+                                <td>Yes</td>
+                                <td>No</td>
+                                <td>Remove an existing resource from the server</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="file-reference-box">
-                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py">main.py</a> and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/contact.html">template/contact.html</a>
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py#L31-L69">main.py & template/contact.html</a>
+                    <div class="study-quick-links">
+                        <a href="/contact" target="_blank" class="btn btn-secondary study-quick-btn">Open Contact Page (/contact) →</a>
+                    </div>
                 </div>
             </div>
         </details>
 
-        <!-- 4. Query Parameters (request.args) -->
+        <!-- 04. URL Query Parameters (request.args.get & Type Coercion) -->
         <details class="study-accordion" id="topic-query-params">
             <summary class="accordion-summary">
                 <div class="summary-left">
                     <span class="topic-num">04</span>
-                    <span class="topic-title">URL Query Parameters (request.args.get)</span>
+                    <span class="topic-title">URL Query Parameters (request.args.get & Type Coercion)</span>
                 </div>
                 <div class="summary-right">
                     <span class="badge-tag">main.py & service.html</span>
@@ -162,81 +411,225 @@ def contact():
                 </div>
             </summary>
             <div class="accordion-body">
-                <p><strong>Concept:</strong> Query parameters (GET parameters) pass key-value pairs in the URL string after a <code>?</code> delimiter (e.g., <code>/service?tier=pro&promo=FLASK20</code>). Flask parses them into the <code>request.args</code> dictionary. Use <code>request.args.get(key, default)</code> to safely access values with default fallbacks.</p>
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>Query parameters (GET parameters) pass serialized key-value pairs in the URL string following the <code>?</code> delimiter (e.g., <code>/service?tier=pro&promo=FLASK20&page=2</code>). Flask parses them into <code>request.args</code>, enabling clean state-sharing, pagination, search queries, and dynamic filters without mutating database records.</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> The WSGI server receives the raw URL query string in <code>environ["QUERY_STRING"]</code>. Flask decodes this via Werkzeug's <code>url_decode()</code> and populates <code>request.args</code> as an <code>ImmutableMultiDict</code>. A powerful feature is the <code>type</code> parameter in <code>request.args.get(key, default, type=int)</code>: if a user navigates to <code>?page=invalid</code>, Flask catches the <code>ValueError</code> internally and cleanly falls back to the default integer without crashing your application. When dealing with multi-value query strings (e.g. <code>?category=python&category=flask</code>), calling <code>get()</code> returns only the first value; use <code>request.args.getlist("category")</code> to obtain all occurrences as a Python list.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Client Request Formulation:</strong> Browser constructs URL with query string: <code>/service?tier=pro&promo=FLASK20</code>.</li>
+                    <li><strong>Server-Side WSGI Parsing:</strong> Flask parses raw query string into <code>request.args</code> (ImmutableMultiDict).</li>
+                    <li><strong>Safe Fallback & Type Coercion:</strong> View extracts parameters using <code>request.args.get("tier", default="all")</code> and <code>type=int</code>.</li>
+                    <li><strong>Business Logic Execution:</strong> Data is filtered, discounted, or paginated based on the extracted parameters.</li>
+                    <li><strong>Template Variable Passing:</strong> Values are forwarded to Jinja to highlight active filters and pre-fill form input boxes.</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
                 <div class="code-block-wrapper">
                     <div class="code-header-bar">
-                        <span>How Query Parameters Work in Flask (4 Core Steps)</span>
+                        <span>main.py (Service Route Query Parameters)</span>
                     </div>
-                    {% raw %}
-                    <pre><code># 1. In the URL:
-# Parameters are appended after a question mark:
-# http://127.0.0.1:5000/service?tier=pro&promo=FLASK20
+                    <pre><code>from flask import request, render_template
 
-# 2. Reading in Python (main.py):
-tier = request.args.get("tier", default="all")
-promo = request.args.get("promo", default="FLASK20")
+@app.route("/service")
+def service():
+    # 1. Read query parameters with safe default values
+    selected_tier = request.args.get("tier", default="all").lower()
+    promo_code = request.args.get("promo", default="FLASK20").strip().upper()
+    
+    # 2. Type coercion for numerical parameters (falls back gracefully on non-integers)
+    page = request.args.get("page", default=1, type=int)
+    
+    # 3. Multi-value checkbox extraction: ?features=api&amp;features=auth
+    selected_features = request.args.getlist("features")
 
-# 3. Generating in Templates (url_for):
-&lt;a href="{{ url_for('service', tier='pro', promo='FLASK20') }}"&gt;Pro Plan&lt;/a&gt;
-&lt;!-- Outputs: /service?tier=pro&amp;promo=FLASK20 --&gt;
+    # 4. Dictionary lookup for business logic
+    promo_discounts = {"FLASK20": 20, "SUMMER50": 50, "WELCOME10": 10}
+    discount_pct = promo_discounts.get(promo_code, 0)
 
-# 4. Pre-populating Form Input Boxes:
-&lt;input type="text" name="promo" value="{{ discount_code }}"&gt;
-&lt;!-- When page loads, the query value is pre-filled into the input box --&gt;</code></pre>
-                    {% endraw %}
+    return render_template(
+        "service.html",
+        selected_tier=selected_tier,
+        discount_code=promo_code,
+        discount_percent=discount_pct,
+        page=page
+    )</code></pre>
                 </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>Missing Type Coercion:</strong> Reading <code>page = int(request.args.get("page", 1))</code> will raise an unhandled <code>ValueError</code> and return an HTTP 500 error if someone types <code>?page=abc</code>. Always use <code>request.args.get("page", 1, type=int)</code>.<br><strong>Single vs Multi-Value:</strong> Using <code>request.args.get("tag")</code> on a URL with repeated keys <code>?tag=a&tag=b</code> only returns <code>'a'</code>. Always use <code>request.args.getlist("tag")</code>.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Method / Attribute</th>
+                                <th>Signature</th>
+                                <th>Description</th>
+                                <th>Example Return</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>get()</code></td>
+                                <td><code>args.get(key, default=None)</code></td>
+                                <td>Safely retrieves first matching value with fallback</td>
+                                <td><code>'pro'</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>get(type=...)</code></td>
+                                <td><code>args.get(key, 1, type=int)</code></td>
+                                <td>Coerces value to specified type; returns default on ValueError</td>
+                                <td><code>1</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>getlist()</code></td>
+                                <td><code>args.getlist(key)</code></td>
+                                <td>Retrieves all occurrences of repeated query parameter keys as a list</td>
+                                <td><code>['pro', 'enterprise']</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>keys()</code></td>
+                                <td><code>args.keys()</code></td>
+                                <td>Returns an iterator over all unique query parameter keys</td>
+                                <td><code>dict_keys(['tier', 'promo'])</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="file-reference-box">
-                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py">main.py</a> and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/service.html">template/service.html</a>
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py#L105-L134">main.py & template/service.html</a>
                     <div class="study-quick-links">
-                        <a href="{{ url_for('service', tier='pro', promo='FLASK20') }}" target="_blank" class="btn btn-secondary study-quick-btn">Try /service?tier=pro&promo=FLASK20 →</a>
-                        <a href="{{ url_for('service', tier='starter', promo='SUMMER50') }}" target="_blank" class="btn btn-secondary study-quick-btn">Try /service?tier=starter&promo=SUMMER50 →</a>
+                        <a href="/service?tier=pro&promo=FLASK20" target="_blank" class="btn btn-secondary study-quick-btn">Try /service?tier=pro&promo=FLASK20 →</a>
+                        <a href="/service?tier=starter&promo=SUMMER50" target="_blank" class="btn btn-secondary study-quick-btn">Try /service?tier=starter&promo=SUMMER50 →</a>
                     </div>
                 </div>
             </div>
         </details>
 
-        <!-- 5. Pre-populating HTML Form Inputs -->
+        <!-- 05. Pre-populating Form Inputs via Jinja & Preventing XSS -->
         <details class="study-accordion" id="topic-prepopulating">
             <summary class="accordion-summary">
                 <div class="summary-left">
                     <span class="topic-num">05</span>
-                    <span class="topic-title">Pre-populating Form Inputs via Jinja</span>
+                    <span class="topic-title">Pre-populating Form Inputs via Jinja & Preventing XSS</span>
                 </div>
                 <div class="summary-right">
-                    <span class="badge-tag">service.html</span>
+                    <span class="badge-tag">service.html & contact.html</span>
                     <span class="accordion-arrow">▾</span>
                 </div>
             </summary>
             <div class="accordion-body">
-                <p><strong>Concept:</strong> To provide default or preserved form values, pass the variable from Flask to Jinja and bind it directly to the HTML <code>input</code> element's <code>value</code> attribute.</p>
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>Form pre-population retains user selections or displays server defaults across page reloads. Whether populating promo codes from query parameters or preserving entered text when validation fails, Jinja binds variables directly to HTML input attributes with automatic contextual escaping to prevent Cross-Site Scripting (XSS).</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> Different HTML form control elements bind values through distinct attributes: standard input boxes (<code>text</code>, <code>email</code>, <code>hidden</code>) bind via the <code>value="..."</code> attribute; <code>&lt;textarea&gt;</code> elements do NOT support the <code>value</code> attribute and must enclose the text between opening and closing tags; checkboxes and radio inputs require conditional evaluation to render the boolean <code>checked</code> attribute; and <code>&lt;select&gt;</code> option items require the <code>selected</code> attribute. Jinja2 automatically escapes HTML entities inside <code>&#123;&#123; ... &#125;&#125;</code> tags by converting special characters (<code>&lt;</code>, <code>&gt;</code>, <code>&amp;</code>, <code>&quot;</code>) into HTML entities, preventing attribute breakout exploits (such as injecting <code>" onfocus="alert(1)</code>).
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Server-Side Variable Binding:</strong> Flask view supplies default, query, or previously submitted values into <code>render_template()</code>.</li>
+                    <li><strong>Attribute Target Selection:</strong> Identify appropriate HTML attribute: <code>value</code>, inner content, <code>checked</code>, or <code>selected</code>.</li>
+                    <li><strong>Jinja Context Interpolation:</strong> Render variable using double curly braces: <code>value="&#123;&#123; discount_code &#125;&#125;"</code>.</li>
+                    <li><strong>Automatic Entity Escaping:</strong> Jinja converts quotes and malicious tags into safe HTML character entities.</li>
+                    <li><strong>User Experience Preservation:</strong> The browser displays pre-populated fields immediately upon initial rendering.</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
                 <div class="code-block-wrapper">
                     <div class="code-header-bar">
-                        <span>template/service.html</span>
+                        <span>template/service.html & template/contact.html</span>
                     </div>
-                    {% raw %}
-                    <pre><code>&lt;form method="GET" action="{{ url_for('service') }}"&gt;
-    &lt;input 
-        type="text" 
-        name="promo" 
-        value="{{ discount_code }}" 
-        placeholder="Enter promo code"
-    &gt;
-    &lt;button type="submit"&gt;Apply Code&lt;/button&gt;
-&lt;/form&gt;</code></pre>
-                    {% endraw %}
+                    <pre><code>&lt;!-- 1. Text Input Field (binds via value attribute) --&gt;
+&lt;input 
+    type="text" 
+    name="promo" 
+    id="promo-input" 
+    class="form-control" 
+    value="&#123;&#123; discount_code &#125;&#125;" 
+    placeholder="e.g. FLASK20"
+&gt;
+
+&lt;!-- 2. Textarea (enclosed between tags, NOT value attribute!) --&gt;
+&lt;textarea name="message" id="message" class="form-control"&gt;&#123;&#123; message|default('') &#125;&#125;&lt;/textarea&gt;
+
+&lt;!-- 3. Dropdown Select Option (conditional selected attribute) --&gt;
+&lt;select name="tier" class="form-control"&gt;
+    &lt;option value="all" &#123;% if selected_tier == 'all' %&#125;selected&#123;% endif %&#125;&gt;All Plans&lt;/option&gt;
+    &lt;option value="starter" &#123;% if selected_tier == 'starter' %&#125;selected&#123;% endif %&#125;&gt;Starter Plan&lt;/option&gt;
+    &lt;option value="pro" &#123;% if selected_tier == 'pro' %&#125;selected&#123;% endif %&#125;&gt;Pro Plan&lt;/option&gt;
+&lt;/select&gt;
+
+&lt;!-- 4. Checkbox (conditional checked attribute) --&gt;
+&lt;input type="checkbox" name="newsletter" value="yes" &#123;% if subscribe %&#125;checked&#123;% endif %&#125;&gt;</code></pre>
                 </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>Textarea Value Attribute Bug:</strong> Writing <code>&lt;textarea value="&#123;&#123; text &#125;&#125;"&gt;&lt;/textarea&gt;</code> will fail in all web browsers because textareas ignore the value attribute. Text must go between tags: <code>&lt;textarea&gt;&#123;&#123; text &#125;&#125;&lt;/textarea&gt;</code>.<br><strong>Bypassing Escaping with | safe:</strong> Applying <code>| safe</code> to user-submitted input inside attributes allows attribute breakouts and XSS attacks.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Form Control Type</th>
+                                <th>HTML Element</th>
+                                <th>Pre-population Syntax</th>
+                                <th>Common Mistake</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Text / Email / Number</td>
+                                <td><code>&lt;input type="text"&gt;</code></td>
+                                <td><code>value="&#123;&#123; val &#125;&#125;"</code></td>
+                                <td>Omitting quotes around attribute</td>
+                            </tr>
+                            <tr>
+                                <td>Multi-line Text</td>
+                                <td><code>&lt;textarea&gt;</code></td>
+                                <td><code>&lt;textarea&gt;&#123;&#123; val &#125;&#125;&lt;/textarea&gt;</code></td>
+                                <td>Attempting <code>value="&#123;&#123; val &#125;&#125;"</code></td>
+                            </tr>
+                            <tr>
+                                <td>Dropdown Select</td>
+                                <td><code>&lt;option&gt;</code></td>
+                                <td><code>&#123;% if val == opt %&#125;selected&#123;% endif %&#125;</code></td>
+                                <td>Placing <code>selected</code> on <code>&lt;select&gt;</code> tag</td>
+                            </tr>
+                            <tr>
+                                <td>Checkbox / Radio</td>
+                                <td><code>&lt;input type="checkbox"&gt;</code></td>
+                                <td><code>&#123;% if checked %&#125;checked&#123;% endif %&#125;</code></td>
+                                <td>Setting <code>value="true"</code> instead of <code>checked</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="file-reference-box">
-                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/service.html">template/service.html</a>
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/service.html#L38-L55">template/service.html</a>
+                    <div class="study-quick-links">
+                        <a href="/service?promo=VIP100" target="_blank" class="btn btn-secondary study-quick-btn">Inspect Promo Input on /service →</a>
+                    </div>
                 </div>
             </div>
         </details>
 
-        <!-- 6. Jinja2 Loops & Loop Metadata -->
+        <!-- 06. Jinja2 Loops, Loop Metadata & The &#123;% else %&#125; Clause -->
         <details class="study-accordion" id="topic-loops">
             <summary class="accordion-summary">
                 <div class="summary-left">
                     <span class="topic-num">06</span>
-                    <span class="topic-title">Jinja2 Loops & Loop Helpers (loop.index)</span>
+                    <span class="topic-title">Jinja2 Loops, Loop Metadata & The &#123;% else %&#125; Clause</span>
                 </div>
                 <div class="summary-right">
                     <span class="badge-tag">about.html & contact.html</span>
@@ -244,33 +637,121 @@ promo = request.args.get("promo", default="FLASK20")
                 </div>
             </summary>
             <div class="accordion-body">
-                <p><strong>Concept:</strong> Iterate over lists and dictionaries using loop blocks. Jinja provides the special <code>loop</code> object with helpers like <code>loop.index</code> (1-based), <code>loop.index0</code> (0-based), <code>loop.first</code>, and <code>loop.last</code>.</p>
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>Jinja2 <code>&#123;% for %&#125;</code> loops iterate over collections (lists, tuples, dictionaries, querysets) to dynamically generate repeated HTML structures. Jinja injects a special <code>loop</code> context object that exposes zero-overhead iteration metadata such as indices, boundary flags, and alternating cycle helpers.</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> Jinja compiles template AST blocks into native Python bytecode. When compiling a <code>for</code> loop, it wraps the iteration inside a <code>LoopContext</code>. The <code>loop</code> object provides convenient properties: <code>loop.index</code> (1-based index), <code>loop.index0</code> (0-based index), <code>loop.first</code> (boolean indicating first iteration), and <code>loop.last</code> (boolean indicating final iteration). A commonly overlooked feature is Jinja's <code>&#123;% else %&#125;</code> loop clause: if the iterable is empty (or evaluates to False), the <code>&#123;% else %&#125;</code> branch renders immediately, eliminating the need to wrap loops in defensive <code>&#123;% if items %&#125;</code> checks.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Data Structure Preparation:</strong> View function packages list or dictionary into the template context dictionary.</li>
+                    <li><strong>Loop AST Execution:</strong> Jinja initiates loop block and binds the current element to the loop variable.</li>
+                    <li><strong>LoopContext Metadata Injection:</strong> Jinja automatically computes <code>loop.index</code>, <code>loop.first</code>, and <code>loop.last</code>.</li>
+                    <li><strong>HTML Block Generation:</strong> DOM snippet is rendered for each item in the collection.</li>
+                    <li><strong>Empty Fallback Handling:</strong> If collection contains zero elements, the optional <code>&#123;% else %&#125;</code> block executes.</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
                 <div class="code-block-wrapper">
                     <div class="code-header-bar">
-                        <span>template/about.html</span>
+                        <span>template/about.html (Team Cards & Milestones)</span>
                     </div>
-                    {% raw %}
-                    <pre><code>{% for member in team %}
-    &lt;div class="member-card"&gt;
-        &lt;span&gt;#{{ loop.index }}&lt;/span&gt;
-        &lt;h3&gt;{{ member.name }}&lt;/h3&gt;
-        &lt;p&gt;{{ member.role }} ({{ member.experience }} yrs)&lt;/p&gt;
+                    <pre><code>&lt;!-- Iterating over list of team member dictionaries with loop helpers --&gt;
+&lt;div class="team-grid"&gt;
+    &#123;% for member in team %&#125;
+    &lt;article class="glass-card team-card &#123;% if loop.first %&#125;team-card-featured&#123;% endif %&#125;"&gt;
+        &lt;div class="card-badge"&gt;
+            Member #&#123;&#123; loop.index &#125;&#125; of &#123;&#123; loop.length &#125;&#125;
+        &lt;/div&gt;
+        &lt;h3&gt;&#123;&#123; member.name &#125;&#125;&lt;/h3&gt;
+        &lt;p class="role"&gt;&#123;&#123; member.role &#125;&#125;&lt;/p&gt;
+        &lt;span class="experience"&gt;&#123;&#123; member.experience &#125;&#125; years experience&lt;/span&gt;
+        &#123;% if loop.last %&#125;
+            &lt;span class="badge-tag"&gt;Newest Addition&lt;/span&gt;
+        &#123;% endif %&#125;
+    &lt;/article&gt;
+    &#123;% else %&#125;
+    &lt;!-- Renders automatically if team list is empty --&gt;
+    &lt;div class="empty-state"&gt;
+        &lt;p&gt;No team members are currently listed.&lt;/p&gt;
     &lt;/div&gt;
-{% endfor %}</code></pre>
-                    {% endraw %}
+    &#123;% endfor %&#125;
+&lt;/div&gt;</code></pre>
                 </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>1-Based vs 0-Based Indices:</strong> Confusing <code>loop.index</code> (starts at 1) with <code>loop.index0</code> (starts at 0) leads to off-by-one errors in CSS IDs and rankings.<br><strong>Dictionary Iteration Traps:</strong> Writing <code>&#123;% for item in my_dict %&#125;</code> only yields dictionary keys. To access both keys and values, write <code>&#123;% for key, val in my_dict.items() %&#125;</code>.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Loop Variable</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Common Use Case</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>loop.index</code></td>
+                                <td>int</td>
+                                <td>1-based iteration counter (1, 2, 3...)</td>
+                                <td>Numbered lists, step badges, ranking cards</td>
+                            </tr>
+                            <tr>
+                                <td><code>loop.index0</code></td>
+                                <td>int</td>
+                                <td>0-based iteration counter (0, 1, 2...)</td>
+                                <td>Array indexing, data-offset HTML attributes</td>
+                            </tr>
+                            <tr>
+                                <td><code>loop.first</code></td>
+                                <td>bool</td>
+                                <td>True if on the first iteration</td>
+                                <td>Applying special highlight or featured styling</td>
+                            </tr>
+                            <tr>
+                                <td><code>loop.last</code></td>
+                                <td>bool</td>
+                                <td>True if on the final iteration</td>
+                                <td>Omitting bottom divider or appending closing tags</td>
+                            </tr>
+                            <tr>
+                                <td><code>loop.length</code></td>
+                                <td>int</td>
+                                <td>Total number of items in the iterable</td>
+                                <td>Displaying 'Item X of Total' counters</td>
+                            </tr>
+                            <tr>
+                                <td><code>loop.cycle('a', 'b')</code></td>
+                                <td>helper</td>
+                                <td>Alternates between given values on each iteration</td>
+                                <td>Zebra striping table rows (<code>row-even</code>, <code>row-odd</code>)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="file-reference-box">
-                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/about.html">template/about.html</a> and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/contact.html">template/contact.html</a>
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/about.html#L70-L135">template/about.html</a>
+                    <div class="study-quick-links">
+                        <a href="/about" target="_blank" class="btn btn-secondary study-quick-btn">View Team Loop on /about →</a>
+                    </div>
                 </div>
             </div>
         </details>
 
-        <!-- 7. Jinja2 Conditionals & Logic -->
+        <!-- 07. Jinja2 Conditionals (if, elif, else & Built-in Tests) -->
         <details class="study-accordion" id="topic-conditionals">
             <summary class="accordion-summary">
                 <div class="summary-left">
                     <span class="topic-num">07</span>
-                    <span class="topic-title">Jinja2 Conditionals (if, elif, else)</span>
+                    <span class="topic-title">Jinja2 Conditionals (if, elif, else & Built-in Tests)</span>
                 </div>
                 <div class="summary-right">
                     <span class="badge-tag">about.html & service.html</span>
@@ -278,35 +759,114 @@ promo = request.args.get("promo", default="FLASK20")
                 </div>
             </summary>
             <div class="accordion-body">
-                <p><strong>Concept:</strong> Conditionally render HTML blocks based on boolean flags, values, or membership expressions (<code>in</code>).</p>
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>Conditionals (<code>&#123;% if %&#125;</code>, <code>&#123;% elif %&#125;</code>, <code>&#123;% else %&#125;</code>) dynamically control DOM rendering based on boolean flags, values, membership expressions, and Jinja test operators (<code>is defined</code>, <code>is none</code>).</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> Jinja evaluates truthiness according to standard Python rules: empty strings (<code>""</code>), numeric zero (<code>0</code>), <code>None</code>, empty lists (<code>[]</code>), and empty dictionaries (<code>{}</code>) evaluate to <code>False</code>. Jinja also provides test expressions invoked via the <code>is</code> keyword (e.g. <code>var is defined</code>, <code>var is none</code>, <code>num is even</code>). Unlike Python where checking an undefined variable raises a <code>NameError</code>, Jinja resolves undefined variables to a special <code>Undefined</code> object (rendering as an empty string) unless <code>StrictUndefined</code> is configured.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Context Variable Evaluation:</strong> Jinja checks expression passed to <code>&#123;% if %&#125;</code>.</li>
+                    <li><strong>Operator & Test Evaluation:</strong> Evaluates boolean logic, membership operators (<code>in</code>), or Jinja tests (<code>is</code>).</li>
+                    <li><strong>Branch Execution:</strong> Renders the first block whose condition evaluates to truthy.</li>
+                    <li><strong>Fallback Branch Execution:</strong> If all previous branches evaluate to false, renders the optional <code>&#123;% else %&#125;</code> block.</li>
+                    <li><strong>DOM Cleanup:</strong> Unmatched branches are omitted completely from the compiled output.</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
                 <div class="code-block-wrapper">
                     <div class="code-header-bar">
                         <span>template/about.html & template/service.html</span>
                     </div>
-                    {% raw %}
-                    <pre><code>{% if is_hiring %}
-    &lt;span class="badge-open"&gt;We are actively hiring!&lt;/span&gt;
-{% else %}
-    &lt;span class="badge-closed"&gt;Positions filled&lt;/span&gt;
-{% endif %}
+                    <pre><code>&lt;!-- 1. Simple Boolean Flag Evaluation --&gt;
+&#123;% if is_hiring %&#125;
+    &lt;span class="badge badge-success"&gt;We are hiring! Join our engineering team.&lt;/span&gt;
+&#123;% else %&#125;
+    &lt;span class="badge badge-neutral"&gt;Applications closed for this quarter.&lt;/span&gt;
+&#123;% endif %&#125;
 
-{% if selected_tier in ['all', 'starter'] %}
-    &lt;article class="pricing-card"&gt;...&lt;/article&gt;
-{% endif %}</code></pre>
-                    {% endraw %}
+&lt;!-- 2. Membership &amp; Multi-Branch Logic --&gt;
+&#123;% if selected_tier == 'pro' %&#125;
+    &lt;div class="pricing-highlight"&gt;Displaying Pro Tier Specifications&lt;/div&gt;
+&#123;% elif selected_tier in ['starter', 'enterprise'] %&#125;
+    &lt;div class="pricing-highlight"&gt;Displaying Alternative Tier: &#123;&#123; selected_tier|title &#125;&#125;&lt;/div&gt;
+&#123;% else %&#125;
+    &lt;div class="pricing-highlight"&gt;Displaying All Available Tiers&lt;/div&gt;
+&#123;% endif %&#125;
+
+&lt;!-- 3. Jinja 'is' Test Expressions --&gt;
+&#123;% if current_discount is not none and current_discount &gt; 0 %&#125;
+    &lt;div class="promo-banner"&gt;Special Discount: &#123;&#123; current_discount &#125;&#125;% OFF!&lt;/div&gt;
+&#123;% endif %&#125;</code></pre>
                 </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>Using JS or Python Syntax:</strong> Writing <code>&#123;% if a && b %&#125;</code> or <code>&#123;% if a is None %&#125;</code> causes template syntax errors. In Jinja, use <code>and</code>, <code>or</code>, and <code>is none</code>.<br><strong>Silent Undefined Variables:</strong> If a variable name is misspelled (e.g. <code>&#123;% if invalid_var %&#125;</code>), Jinja treats it as False without warning unless <code>StrictUndefined</code> is explicitly configured.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Jinja Test</th>
+                                <th>Syntax</th>
+                                <th>Behavior</th>
+                                <th>Python Equivalent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>defined</code></td>
+                                <td><code>&#123;% if var is defined %&#125;</code></td>
+                                <td>True if variable exists in template context</td>
+                                <td><code>'var' in locals()</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>none</code></td>
+                                <td><code>&#123;% if var is none %&#125;</code></td>
+                                <td>True if variable is explicitly <code>None</code></td>
+                                <td><code>var is None</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>even / odd</code></td>
+                                <td><code>&#123;% if loop.index is even %&#125;</code></td>
+                                <td>True if integer is divisible by 2</td>
+                                <td><code>val % 2 == 0</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>number</code></td>
+                                <td><code>&#123;% if val is number %&#125;</code></td>
+                                <td>True if value is int or float</td>
+                                <td><code>isinstance(val, (int, float))</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>iterable</code></td>
+                                <td><code>&#123;% if list is iterable %&#125;</code></td>
+                                <td>True if value can be iterated over</td>
+                                <td><code>isinstance(val, Iterable)</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="file-reference-box">
-                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/about.html">template/about.html</a> and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/service.html">template/service.html</a>
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/about.html#L18-L45">template/about.html</a>
+                    <div class="study-quick-links">
+                        <a href="/about" target="_blank" class="btn btn-secondary study-quick-btn">Inspect Hiring Banner on /about →</a>
+                    </div>
                 </div>
             </div>
         </details>
 
-        <!-- 8. Template Inheritance -->
+        <!-- 08. Template Inheritance (extends, block & super()) -->
         <details class="study-accordion" id="topic-inheritance">
             <summary class="accordion-summary">
                 <div class="summary-left">
                     <span class="topic-num">08</span>
-                    <span class="topic-title">Template Inheritance (extends & block)</span>
+                    <span class="topic-title">Template Inheritance (extends, block & super())</span>
                 </div>
                 <div class="summary-right">
                     <span class="badge-tag">base.html & all child pages</span>
@@ -314,67 +874,230 @@ promo = request.args.get("promo", default="FLASK20")
                 </div>
             </summary>
             <div class="accordion-body">
-                <p><strong>Concept:</strong> Define a master layout in <code>base.html</code> with common tags (head, meta, scripts, header, footer) and inject page-specific content into predefined blocks using <code>extends</code>.</p>
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>Template inheritance inverts presentation control: a master layout (<code>base.html</code>) defines the global HTML document scaffolding (head, metadata, navigation, footer, toast containers), while child templates extend the layout and override designated <code>&#123;% block %&#125;</code> regions.</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> During AST compilation, Jinja detects the <code>&#123;% extends %&#125;</code> tag at the top of a child template. It compiles the parent template and replaces each parent <code>BlockNode</code> with the matching block AST from the child. Any HTML written outside of a <code>&#123;% block %&#125;</code> inside a child template is completely discarded. If a child block needs to append or prepend content rather than replacing the parent block entirely, it calls <code>&#123;&#123; super() &#125;&#125;</code>. This is critical when appending page-specific scripts without wiping global scripts.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Master Layout Construction:</strong> <code>base.html</code> establishes document structure with named blocks: <code>title</code>, <code>extra_css</code>, <code>content</code>, <code>scripts</code>.</li>
+                    <li><strong>Child Template Declaration:</strong> Child declares <code>&#123;% extends "base.html" %&#125;</code> as its very first tag.</li>
+                    <li><strong>Block Region Overriding:</strong> Child overrides specific blocks, providing targeted HTML and CSS links.</li>
+                    <li><strong>Parent Block Chaining via super():</strong> Child calls <code>&#123;&#123; super() &#125;&#125;</code> to retain parent styles or scripts while appending new ones.</li>
+                    <li><strong>Composite DOM Assembly:</strong> Jinja merges the AST trees into a single, cohesive HTML response.</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
                 <div class="code-block-wrapper">
                     <div class="code-header-bar">
                         <span>template/base.html vs template/home.html</span>
                     </div>
-                    {% raw %}
-                    <pre><code>&lt;!-- In base.html --&gt;
-&lt;main&gt;
-    {% block content %}{% endblock %}
-&lt;/main&gt;
+                    <pre><code>&lt;!-- In template/base.html (Master Skeleton) --&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;&#123;% block title %&#125;Default Title | FlaskCraft&#123;% endblock %&#125;&lt;/title&gt;
+    &lt;link rel="stylesheet" href="&#123;&#123; url_for('static', filename='css/base.css') &#125;&#125;"&gt;
+    &#123;% block extra_css %&#125;&#123;% endblock %&#125;
+&lt;/head&gt;
+&lt;body&gt;
+    &#123;% include 'components/navbar.html' %&#125;
+    &lt;main&gt;
+        &#123;% block content %&#125;&#123;% endblock %&#125;
+    &lt;/main&gt;
+    &#123;% include 'components/footer.html' %&#125;
+    &lt;script src="&#123;&#123; url_for('static', filename='js/main.js') &#125;&#125;"&gt;&lt;/script&gt;
+    &#123;% block scripts %&#125;&#123;% endblock %&#125;
+&lt;/body&gt;
+&lt;/html&gt;
 
-&lt;!-- In home.html --&gt;
-{% extends "base.html" %}
-{% block title %}Home | FlaskCraft{% endblock %}
-{% block content %}
-    &lt;h1&gt;Welcome to Home Page&lt;/h1&gt;
-{% endblock %}</code></pre>
-                    {% endraw %}
+&lt;!-- In template/home.html (Child Template) --&gt;
+&#123;% extends "base.html" %&#125;
+
+&#123;% block title %&#125;Home | Modern Flask Platform&#123;% endblock %&#125;
+
+&#123;% block extra_css %&#125;
+&lt;link rel="stylesheet" href="/static/css/home.css"&gt;
+&#123;% endblock %&#125;
+
+&#123;% block content %&#125;
+&lt;section class="hero-section"&gt;
+    &lt;h1&gt;Welcome to FlaskCraft&lt;/h1&gt;
+&lt;/section&gt;
+&#123;% endblock %&#125;</code></pre>
                 </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>Placing Markup Outside Blocks:</strong> Any text or HTML tags placed outside <code>&#123;% block %&#125;</code> tags in an extending template will be silently discarded by Jinja.<br><strong>Missing First Tag Rule:</strong> <code>&#123;% extends %&#125;</code> must be the first non-comment tag in the file; placing HTML above it breaks template inheritance.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Block Name</th>
+                                <th>Declared In</th>
+                                <th>Purpose</th>
+                                <th>Default Fallback</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>title</code></td>
+                                <td><code>&lt;head&gt;</code></td>
+                                <td>Defines page title for browser tab and SEO</td>
+                                <td><code>FlaskCraft</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>meta_description</code></td>
+                                <td><code>&lt;head&gt;</code></td>
+                                <td>Custom search engine snippet description</td>
+                                <td>Global site description</td>
+                            </tr>
+                            <tr>
+                                <td><code>extra_css</code></td>
+                                <td><code>&lt;head&gt;</code></td>
+                                <td>Injects page-specific modular stylesheets</td>
+                                <td>Empty (loads base.css only)</td>
+                            </tr>
+                            <tr>
+                                <td><code>content</code></td>
+                                <td><code>&lt;main&gt;</code></td>
+                                <td>Main unique page body content</td>
+                                <td>Empty</td>
+                            </tr>
+                            <tr>
+                                <td><code>scripts</code></td>
+                                <td>Before <code>&lt;/body&gt;</code></td>
+                                <td>Injects page-specific JavaScript modules</td>
+                                <td>Empty (loads main.js only)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="file-reference-box">
-                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/base.html">template/base.html</a> and all page templates
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/base.html#L1-L70">template/base.html</a>
+                    <div class="study-quick-links">
+                        <a href="/" target="_blank" class="btn btn-secondary study-quick-btn">Inspect Base Template Structure →</a>
+                    </div>
                 </div>
             </div>
         </details>
 
-        <!-- 9. Modular Template Partials (Components) -->
+        <!-- 09. Modular Partials & Component Architecture (include) -->
         <details class="study-accordion" id="topic-partials">
             <summary class="accordion-summary">
                 <div class="summary-left">
                     <span class="topic-num">09</span>
-                    <span class="topic-title">Modular Partials & Components (include)</span>
+                    <span class="topic-title">Modular Partials & Component Architecture (include)</span>
                 </div>
                 <div class="summary-right">
-                    <span class="badge-tag">components/</span>
+                    <span class="badge-tag">components/ & base.html</span>
                     <span class="accordion-arrow">▾</span>
                 </div>
             </summary>
             <div class="accordion-body">
-                <p><strong>Concept:</strong> Extract reusable snippets (e.g. Navbar, Footer, Flash alerts) into separate files under <code>template/components/</code> and embed them cleanly using <code>include</code>.</p>
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>The <code>&#123;% include %&#125;</code> tag renders external template fragments and injects their output directly into the host template. This encapsulates reusable UI components (navigation bars, footers, toast notifications, pricing tables) into independent, maintainable partials under <code>template/components/</code>.</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> When Jinja processes an <code>include</code>, it fetches the referenced template file, compiles it, and renders it using the caller's active context (<code>with context</code> by default). All variables in scope in the parent template (such as <code>request</code>, <code>session</code>, and user variables) are automatically accessible inside the included component. To isolate components and prevent unintentional side effects, you can append <code>without context</code>. Furthermore, passing <code>ignore missing</code> prevents template errors if an optional component file is missing.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Component Identification:</strong> Identify repeated UI elements (Navbar, Footer, Toast notifications).</li>
+                    <li><strong>Partial File Creation:</strong> Extract snippet into dedicated file under <code>template/components/filename.html</code>.</li>
+                    <li><strong>Template Embedding:</strong> Embed component using <code>&#123;% include 'components/filename.html' %&#125;</code>.</li>
+                    <li><strong>Context Sharing or Scoping:</strong> Component inherits parent variables or executes isolated via <code>without context</code>.</li>
+                    <li><strong>Single Source of Truth:</strong> Updates to the partial automatically propagate across all pages referencing it.</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
                 <div class="code-block-wrapper">
                     <div class="code-header-bar">
-                        <span>template/base.html</span>
+                        <span>template/base.html & template/components/navbar.html</span>
                     </div>
-                    {% raw %}
-                    <pre><code>{% include 'components/navbar.html' %}
-{% include 'components/flash_messages.html' %}
+                    <pre><code>&lt;!-- In template/base.html --&gt;
+&lt;header class="navbar-wrapper"&gt;
+    &lt;!-- Embed modular navigation component --&gt;
+    &#123;% include 'components/navbar.html' %&#125;
+&lt;/header&gt;
 
-&lt;main&gt;
-    {% block content %}{% endblock %}
+&lt;!-- Embed global toast notification container --&gt;
+&#123;% include 'components/toast.html' %&#125;
+
+&lt;main class="page-body"&gt;
+    &#123;% block content %&#125;&#123;% endblock %&#125;
 &lt;/main&gt;
 
-{% include 'components/footer.html' %}</code></pre>
-                    {% endraw %}
+&lt;!-- Embed modular footer component --&gt;
+&#123;% include 'components/footer.html' %&#125;
+
+&lt;!-- Optional snippet inclusion with ignore missing flag --&gt;
+&#123;% include 'components/analytics.html' ignore missing without context %&#125;</code></pre>
                 </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>Include vs Extends Confusion:</strong> Using <code>include</code> for entire page skeletons instead of <code>extends</code> causes layout duplication and breaks block overrides.<br><strong>Variable Shadowing:</strong> Because included templates share the host context by default, variable names inside components can overwrite or collide with host variables.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Inclusion Syntax</th>
+                                <th>Context Behavior</th>
+                                <th>Missing File Behavior</th>
+                                <th>Ideal Use Case</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>&#123;% include 'f.html' %&#125;</code></td>
+                                <td>Shares host context</td>
+                                <td>Raises TemplateNotFound exception</td>
+                                <td>Standard UI partials (Navbar, Footer)</td>
+                            </tr>
+                            <tr>
+                                <td><code>&#123;% include 'f.html' with context %&#125;</code></td>
+                                <td>Explicitly shares context</td>
+                                <td>Raises TemplateNotFound exception</td>
+                                <td>Components requiring request/session state</td>
+                            </tr>
+                            <tr>
+                                <td><code>&#123;% include 'f.html' without context %&#125;</code></td>
+                                <td>Strictly isolated context</td>
+                                <td>Raises TemplateNotFound exception</td>
+                                <td>Pure UI widgets independent of host state</td>
+                            </tr>
+                            <tr>
+                                <td><code>&#123;% include 'f.html' ignore missing %&#125;</code></td>
+                                <td>Shares host context</td>
+                                <td>Silently skips if file does not exist</td>
+                                <td>Optional feature flags, tracking snippets</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="file-reference-box">
-                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/components/navbar.html">navbar.html</a>, <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/components/footer.html">footer.html</a>, and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/components/flash_messages.html">flash_messages.html</a>
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/base.html#L28-L55">template/base.html & template/components/</a>
+                    <div class="study-quick-links">
+                        <a href="/" target="_blank" class="btn btn-secondary study-quick-btn">View Modular Navbar in Action →</a>
+                    </div>
                 </div>
             </div>
         </details>
 
-        <!-- 10. Static Assets & url_for -->
+        <!-- 10. Static Assets Management (url_for vs Direct Path) -->
         <details class="study-accordion" id="topic-static">
             <summary class="accordion-summary">
                 <div class="summary-left">
@@ -387,32 +1110,94 @@ promo = request.args.get("promo", default="FLASK20")
                 </div>
             </summary>
             <div class="accordion-body">
-                <p><strong>Concept:</strong> Static assets (CSS, JS, images, SVG) are stored in the <code>static/</code> directory. They can be linked using Flask's dynamic resolver <code>url_for('static', filename='...')</code> or via direct URLs like <code>/static/...</code>.</p>
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>Static assets (stylesheets, JavaScript files, images, SVG icons, fonts) reside in the <code>static/</code> directory. Flask exposes a built-in static endpoint that can be referenced dynamically using <code>url_for('static', filename='...')</code> or via direct root-relative paths like <code>/static/...</code>.</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> When the Flask application boots, it automatically registers a route: <code>@app.route('/static/&lt;path:filename&gt;')</code> mapped to the internal endpoint <code>static</code>. Calling <code>url_for('static', filename='css/base.css')</code> returns <code>/static/css/base.css</code>. In production, serving static files directly through Python/WSGI is an anti-pattern: web servers like Nginx, Apache, or CDN proxies (Cloudflare, AWS CloudFront) should intercept <code>/static/</code> requests and serve them directly from storage with gzip/brotli compression and long-lived <code>Cache-Control</code> headers (e.g. <code>max-age=31536000, immutable</code>). Adding query-string version hashes (e.g. <code>?v=2026.1</code>) enables instant cache invalidation upon redeployment.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Asset Organization:</strong> Organize assets into subdirectories: <code>static/css/</code>, <code>static/js/</code>, <code>static/images/</code>.</li>
+                    <li><strong>Dynamic URL Resolution:</strong> Reference assets via <code>url_for('static', filename='...')</code> in templates.</li>
+                    <li><strong>Cache Invalidation (Cache Busting):</strong> Append version query parameters (<code>?v=2.0</code>) to force browsers to reload updated assets.</li>
+                    <li><strong>MIME Type Verification:</strong> Flask automatically determines correct HTTP <code>Content-Type</code> headers based on file extensions.</li>
+                    <li><strong>Production Reverse Proxying:</strong> Configure Nginx or CDN to serve <code>/static/</code> directly without hitting Python workers.</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
                 <div class="code-block-wrapper">
                     <div class="code-header-bar">
-                        <span>template/base.html</span>
+                        <span>template/base.html & template/about.html</span>
                     </div>
-                    {% raw %}
-                    <pre><code>&lt;!-- Option 1 (Dynamic url_for helper - recommended for caching & routing): --&gt;
-&lt;link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"&gt;
+                    <pre><code>&lt;!-- Option 1: Dynamic url_for Resolver (Recommended for caching &amp; subpath hosting) --&gt;
+&lt;link rel="stylesheet" href="&#123;&#123; url_for('static', filename='css/base.css') &#125;&#125;"&gt;
+&lt;link rel="icon" type="image/svg+xml" href="&#123;&#123; url_for('static', filename='images/favicon.svg') &#125;&#125;"&gt;
 
-&lt;!-- Option 2 (Direct path from root): --&gt;
-&lt;link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg"&gt;
-&lt;script src="/static/js/main.js"&gt;&lt;/script&gt;</code></pre>
-                    {% endraw %}
+&lt;!-- Option 2: Direct Root-Relative Path (Clean, modular child page inclusion) --&gt;
+&lt;link rel="stylesheet" href="/static/css/study.css"&gt;
+
+&lt;!-- Cache Busting with Version Parameter --&gt;
+&lt;link rel="stylesheet" href="&#123;&#123; url_for('static', filename='css/base.css', v='2026.1') &#125;&#125;"&gt;
+
+&lt;!-- Dynamic Script Loading --&gt;
+&lt;script src="&#123;&#123; url_for('static', filename='js/main.js') &#125;&#125;" defer&gt;&lt;/script&gt;</code></pre>
                 </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>Hardcoding OS File Paths:</strong> Using local Windows filesystem paths (e.g. <code>C:\static\style.css</code>) in HTML breaks completely when deployed to Linux or accessed via HTTP.<br><strong>Serving Media via WSGI in Production:</strong> Forcing Gunicorn workers to stream multi-megabyte videos or images ties up worker threads and degrades web throughput.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Approach</th>
+                                <th>Syntax</th>
+                                <th>Pros</th>
+                                <th>Cons</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Dynamic Resolver</td>
+                                <td><code>&#123;&#123; url_for('static', filename='...') &#125;&#125;</code></td>
+                                <td>Adapts to custom subpaths, CDN prefixes, and cache queries</td>
+                                <td>Slightly more verbose syntax</td>
+                            </tr>
+                            <tr>
+                                <td>Direct Root Path</td>
+                                <td><code>href="/static/css/base.css"</code></td>
+                                <td>Compact syntax, standard across front-end toolchains</td>
+                                <td>Requires root-domain hosting</td>
+                            </tr>
+                            <tr>
+                                <td>Cache-Busted URL</td>
+                                <td><code>url_for('static', filename='...', v='1.2')</code></td>
+                                <td>Forces immediate browser cache refresh on CSS updates</td>
+                                <td>Requires manual or automated version updates</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="file-reference-box">
-                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/base.html">template/base.html</a> and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/static/css/style.css">static/css/style.css</a>
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/base.html#L14-L25">template/base.html</a>
+                    <div class="study-quick-links">
+                        <a href="/static/css/base.css" target="_blank" class="btn btn-secondary study-quick-btn">View Base CSS File Directly →</a>
+                    </div>
                 </div>
             </div>
         </details>
 
-        <!-- 11. Dynamic URL Building (url_for) -->
+        <!-- 11. Dynamic URL Generation with url_for() & External URLs -->
         <details class="study-accordion" id="topic-urlfor">
             <summary class="accordion-summary">
                 <div class="summary-left">
                     <span class="topic-num">11</span>
-                    <span class="topic-title">Dynamic URL Generation with url_for()</span>
+                    <span class="topic-title">Dynamic URL Generation with url_for() & External URLs</span>
                 </div>
                 <div class="summary-right">
                     <span class="badge-tag">navbar.html & service.html</span>
@@ -420,30 +1205,106 @@ promo = request.args.get("promo", default="FLASK20")
                 </div>
             </summary>
             <div class="accordion-body">
-                <p><strong>Concept:</strong> Always use <code>url_for('endpoint_name')</code> instead of hardcoding raw URLs. Any extra keyword arguments are automatically serialized into query parameters.</p>
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>Hardcoding URL paths (e.g. <code>&lt;a href="/service"&gt;</code>) makes applications brittle and prone to broken links when routes change. Flask's <code>url_for()</code> provides robust reverse routing: you pass the name of the view function, and Flask dynamically computes the corresponding canonical URL.</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> <code>url_for(endpoint, **values)</code> inspects <code>app.url_map</code> to find the rule matching the requested endpoint name. If the view belongs to a Blueprint, the endpoint must include the blueprint prefix (e.g. <code>auth.login</code>, <code>api.get_services</code>). If a view function within the same blueprint is calling <code>url_for()</code>, a relative shortcut with a leading dot can be used (e.g. <code>url_for('.login')</code>). Any keyword arguments that do not correspond to variable path converters are automatically converted and appended as URL-encoded query parameters. Passing <code>_external=True</code> generates a full, absolute URL including scheme and domain (e.g. <code>https://flaskcraft.com/reset</code>), which is essential for emails, webhooks, and third-party OAuth callbacks.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Endpoint Resolution:</strong> Flask matches endpoint string (e.g. <code>'auth.login'</code>) against <code>app.url_map</code>.</li>
+                    <li><strong>Path Variable Substitution:</strong> Keyword arguments matching route parameters (e.g. <code>id=42</code>) are substituted into the URL path.</li>
+                    <li><strong>Query Parameter Serialization:</strong> Unmatched keyword arguments are converted into a URL query string (<code>?promo=FLASK20</code>).</li>
+                    <li><strong>Scheme & Host Formatting:</strong> If <code>_external=True</code> is passed, appends HTTP/HTTPS scheme and server domain name.</li>
+                    <li><strong>Anchor Fragment Appending:</strong> If <code>_anchor='...'</code> is provided, appends hash fragment (<code>#section</code>) to the URL.</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
                 <div class="code-block-wrapper">
                     <div class="code-header-bar">
-                        <span>url_for Examples</span>
+                        <span>template/components/navbar.html & service.html</span>
                     </div>
-                    {% raw %}
-                    <pre><code>&lt;!-- Basic route URL: --&gt;
-&lt;a href="{{ url_for('home') }}"&gt;Home&lt;/a&gt;
+                    <pre><code>&lt;!-- 1. Basic Application Routes --&gt;
+&lt;a href="&#123;&#123; url_for('home') &#125;&#125;"&gt;Home&lt;/a&gt;
+&lt;a href="&#123;&#123; url_for('about') &#125;&#125;"&gt;About Us&lt;/a&gt;
 
-&lt;!-- Route with Query Parameters: --&gt;
-&lt;a href="{{ url_for('service', tier='pro', promo='FLASK20') }}"&gt;Pro Plan&lt;/a&gt;
-&lt;!-- Produces: /service?tier=pro&promo=FLASK20 --&gt;
+&lt;!-- 2. Blueprint Namespaced Routes --&gt;
+&lt;a href="&#123;&#123; url_for('auth.login') &#125;&#125;"&gt;Account Login&lt;/a&gt;
+&lt;a href="&#123;&#123; url_for('flash_demo.flash_page') &#125;&#125;"&gt;Flash Playground&lt;/a&gt;
 
-&lt;!-- Blueprint Route URL: --&gt;
-&lt;a href="{{ url_for('flash_demo.flash_page') }}"&gt;Flash Demo&lt;/a&gt;</code></pre>
-                    {% endraw %}
+&lt;!-- 3. Dynamic Route with Query Parameters --&gt;
+&lt;a href="&#123;&#123; url_for('service', tier='pro', promo='FLASK20') &#125;&#125;"&gt;
+    View Pro Tier (20% Off)
+&lt;/a&gt;
+&lt;!-- Outputs: /service?tier=pro&amp;promo=FLASK20 --&gt;
+
+&lt;!-- 4. Absolute External URLs for Emails / Webhooks (in Python) --&gt;
+# reset_url = url_for('auth.reset_password', token=token, _external=True)
+# Generates: http://127.0.0.1:5000/reset-password?token=xyz</code></pre>
                 </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>Missing Blueprint Prefix:</strong> Writing <code>url_for('login')</code> instead of <code>url_for('auth.login')</code> raises a <code>BuildError: Could not build url for endpoint 'login'</code>.<br><strong>Passing Function Objects:</strong> Passing the Python function reference itself (e.g. <code>url_for(home)</code>) instead of a string (<code>url_for('home')</code>) causes runtime errors in Jinja.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Argument</th>
+                                <th>Type</th>
+                                <th>Function</th>
+                                <th>Example Output</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>endpoint</code></td>
+                                <td>str</td>
+                                <td>Target view function or blueprint.endpoint name</td>
+                                <td><code>'service'</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>_external</code></td>
+                                <td>bool</td>
+                                <td>If True, generates absolute canonical URL with protocol and host</td>
+                                <td><code>http://127.0.0.1:5000/service</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>_scheme</code></td>
+                                <td>str</td>
+                                <td>Specifies URL scheme (e.g. 'https') when _external=True</td>
+                                <td><code>https://...</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>_anchor</code></td>
+                                <td>str</td>
+                                <td>Appends hash fragment identifier to the URL</td>
+                                <td><code>/study#topic-urlfor</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>**values</code></td>
+                                <td>kwargs</td>
+                                <td>Extra keyword arguments serialized as query parameters</td>
+                                <td><code>?tier=pro&promo=FLASK20</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="file-reference-box">
-                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/components/navbar.html">navbar.html</a> and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/service.html">service.html</a>
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/components/navbar.html#L10-L40">template/components/navbar.html</a>
+                    <div class="study-quick-links">
+                        <a href="/service?tier=pro&promo=FLASK20" target="_blank" class="btn btn-secondary study-quick-btn">Test Dynamic Query Link →</a>
+                    </div>
                 </div>
             </div>
         </details>
 
-        <!-- 12. Modular Blueprints -->
+        <!-- 12. Modular Architecture with Flask Blueprints -->
         <details class="study-accordion" id="topic-blueprints">
             <summary class="accordion-summary">
                 <div class="summary-left">
@@ -451,34 +1312,106 @@ promo = request.args.get("promo", default="FLASK20")
                     <span class="topic-title">Modular Architecture with Flask Blueprints</span>
                 </div>
                 <div class="summary-right">
-                    <span class="badge-tag">api.py & flash_demo.py</span>
+                    <span class="badge-tag">api.py, auth.py & flash_demo.py</span>
                     <span class="accordion-arrow">▾</span>
                 </div>
             </summary>
             <div class="accordion-body">
-                <p><strong>Concept:</strong> Blueprints allow splitting large applications into independent modules or files, each with their own routes, URL prefixes, and logic. Register them into the central app with <code>app.register_blueprint()</code>.</p>
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>A Flask Blueprint is a design pattern for structuring large web applications into modular, cohesive components. Blueprints encapsulate routes, view logic, error handlers, static assets, and templates into separate Python modules that register cleanly onto the main application instance.</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> A Blueprint is not a standalone WSGI application; rather, it is a record of operations to be registered onto a <code>Flask</code> instance. When <code>app.register_blueprint(api_bp)</code> is called in <code>main.py</code>, Flask replays the blueprint's recorded routes and hooks, prefixing endpoints with the blueprint name and prepending the configured <code>url_prefix</code> (e.g. <code>/api</code> or <code>/auth</code>). Blueprints can also register their own independent lifecycle hooks (such as <code>@bp.before_request</code> and <code>@bp.errorhandler</code>) that apply exclusively to routes within that blueprint namespace.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Blueprint Instantiation:</strong> Instantiate <code>Blueprint('name', __name__, url_prefix='/...')</code> in a dedicated file.</li>
+                    <li><strong>Route & Hook Definition:</strong> Attach routes using <code>@bp.route()</code> and middleware using <code>@bp.before_request</code>.</li>
+                    <li><strong>Exporting Blueprint:</strong> Expose the blueprint instance for consumption by the main application.</li>
+                    <li><strong>Application Registration:</strong> Import and register in <code>main.py</code> via <code>app.register_blueprint(bp)</code>.</li>
+                    <li><strong>Namespaced Request Dispatching:</strong> Flask dispatches matching incoming requests to blueprint handlers based on URL prefixes.</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
                 <div class="code-block-wrapper">
                     <div class="code-header-bar">
-                        <span>api.py & main.py</span>
+                        <span>api.py & main.py (Blueprint Setup)</span>
                     </div>
-                    <pre><code># In api.py:
+                    <pre><code># In api.py (Modular API Module)
 from flask import Blueprint, jsonify
+
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
-# In main.py:
+@api_bp.route("/services")
+def list_services():
+    return jsonify({"success": True, "count": 3, "data": [...]})
+
+# -------------------------------------------------------------
+# In main.py (Central Application Orchestrator)
+from flask import Flask
 from api import api_bp
+from auth import auth_bp
 from flash_demo import flash_bp
 
-app.register_blueprint(api_bp)
-app.register_blueprint(flash_bp)</code></pre>
+app = Flask(__name__, template_folder="template")
+app.secret_key = "flaskcraft-dev-secret-key-2026"
+
+# Register modular blueprints with the central application
+app.register_blueprint(api_bp)                  # Exposes /api/*
+app.register_blueprint(auth_bp)                 # Exposes /login, /logout, /dashboard
+app.register_blueprint(flash_bp)                # Exposes /flash-demo</code></pre>
                 </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>Circular Import Deadlocks:</strong> Importing <code>app</code> inside a blueprint module while <code>main.py</code> imports the blueprint causes Python circular import errors. Always instantiate <code>Blueprint</code> independently without importing <code>app</code>.<br><strong>Missing URL Prefix:</strong> Forgetting <code>url_prefix="/api"</code> registers API routes directly on the root path, risking collisions with frontend routes.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Blueprint Name</th>
+                                <th>File</th>
+                                <th>URL Prefix</th>
+                                <th>Responsibility</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>api_bp</code></td>
+                                <td><code>api.py</code></td>
+                                <td><code>/api</code></td>
+                                <td>REST API endpoints, JSON responses, status code validation</td>
+                            </tr>
+                            <tr>
+                                <td><code>auth_bp</code></td>
+                                <td><code>auth.py</code></td>
+                                <td><code>None</code> (Root)</td>
+                                <td>Login, logout, session persistence, protected dashboard route</td>
+                            </tr>
+                            <tr>
+                                <td><code>flash_bp</code></td>
+                                <td><code>flash_demo.py</code></td>
+                                <td><code>None</code> (Root)</td>
+                                <td>Flash message interactive playground and toast trigger demos</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="file-reference-box">
-                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/api.py">api.py</a> and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/flash_demo.py">flash_demo.py</a>
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/api.py#L12-L15">api.py & auth.py</a>
+                    <div class="study-quick-links">
+                        <a href="/api/services" target="_blank" class="btn btn-secondary study-quick-btn">Try /api/services Endpoint →</a>
+                        <a href="/login" target="_blank" class="btn btn-secondary study-quick-btn">Try /login Auth Route →</a>
+                    </div>
                 </div>
             </div>
         </details>
 
-        <!-- 13. REST APIs with jsonify -->
+        <!-- 13. REST APIs & JSON Responses with jsonify -->
         <details class="study-accordion" id="topic-jsonify">
             <summary class="accordion-summary">
                 <div class="summary-left">
@@ -491,40 +1424,123 @@ app.register_blueprint(flash_bp)</code></pre>
                 </div>
             </summary>
             <div class="accordion-body">
-                <p><strong>Concept:</strong> Flask's <code>jsonify()</code> serializes Python dictionaries/lists into JSON strings, sets the <code>Content-Type: application/json</code> header, and pairs with appropriate HTTP status codes (<code>200</code>, <code>201</code>, <code>400</code>, <code>404</code>). Use <code>request.get_json()</code> to parse incoming JSON bodies.</p>
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>Flask's <code>jsonify()</code> serializes Python data structures (dictionaries, lists, primitives) into JSON-formatted HTTP responses. It configures the response MIME type as <code>application/json</code> and pairs seamlessly with semantic HTTP status code tuples.</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> Calling <code>json.dumps()</code> produces a raw Python string that Flask serves with <code>Content-Type: text/html; charset=utf-8</code>. In contrast, <code>jsonify()</code> wraps data in a genuine <code>Response</code> object with <code>Content-Type: application/json</code>. To process incoming JSON bodies from clients, use <code>request.get_json(silent=True)</code>: setting <code>silent=True</code> prevents Flask from raising an unhandled 400 Bad Request if the body is empty or malformed, enabling you to return customized, descriptive JSON error objects.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Request Payload Inspection:</strong> Check incoming request headers and parse JSON body with <code>request.get_json()</code>.</li>
+                    <li><strong>Input Validation:</strong> Validate data types, required fields, and business constraints.</li>
+                    <li><strong>Data Processing:</strong> Perform database querying, record creation, or calculations.</li>
+                    <li><strong>JSON Serialization:</strong> Package output into Python dictionary and pass to <code>jsonify()</code>.</li>
+                    <li><strong>Status Code Assignment:</strong> Return a response tuple pairing JSON data with an appropriate HTTP status code (200, 201, 400, 404).</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
                 <div class="code-block-wrapper">
                     <div class="code-header-bar">
-                        <span>api.py (Endpoints & Responses)</span>
+                        <span>api.py (REST Endpoints & Validation)</span>
                     </div>
                     <pre><code>from flask import Blueprint, jsonify, request
+from datetime import datetime, timezone
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
-# 1. GET returning JSON data
+# 1. GET Request returning JSON with status code 200
 @api_bp.route("/services", methods=["GET"])
 def get_services():
-    return jsonify({"success": True, "count": 3, "data": [...]}), 200
+    tier = request.args.get("tier")
+    services = [...] # query database
+    return jsonify({
+        "success": True,
+        "count": len(services),
+        "data": services,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }), 200
 
-# 2. POST accepting JSON body
+# 2. POST Request parsing JSON body with status code 201 &amp; 400 validation
 @api_bp.route("/inquiries", methods=["POST"])
-def create_inquiry():
-    data = request.get_json()
-    if not data or "name" not in data:
-        return jsonify({"success": False, "error": "Invalid JSON"}), 400
-    return jsonify({"success": True, "data": data}), 201</code></pre>
+def submit_inquiry():
+    data = request.get_json(silent=True)
+    if not data or "name" not in data or "email" not in data:
+        return jsonify({
+            "success": False,
+            "error": "Validation failed: 'name' and 'email' are required JSON fields."
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": "Inquiry created successfully.",
+        "record": data
+    }), 201</code></pre>
                 </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>Omitting Status Code:</strong> Forgetting the status code tuple in error responses (e.g. <code>return jsonify({'error': 'Not found'})</code>) sends the error payload with an HTTP 200 OK status code.<br><strong>Using json.dumps():</strong> Returning <code>json.dumps(data)</code> sends <code>Content-Type: text/html</code>, which can break frontend API clients expecting JSON headers.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Status Code</th>
+                                <th>Name</th>
+                                <th>When to Return in APIs</th>
+                                <th>Example Scenario</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>200 OK</code></td>
+                                <td>Success</td>
+                                <td>Resource successfully retrieved or updated</td>
+                                <td>GET /api/services</td>
+                            </tr>
+                            <tr>
+                                <td><code>201 Created</code></td>
+                                <td>Created</td>
+                                <td>New resource successfully created</td>
+                                <td>POST /api/inquiries</td>
+                            </tr>
+                            <tr>
+                                <td><code>204 No Content</code></td>
+                                <td>No Content</td>
+                                <td>Action succeeded; no response body returned</td>
+                                <td>DELETE /api/items/5</td>
+                            </tr>
+                            <tr>
+                                <td><code>400 Bad Request</code></td>
+                                <td>Client Error</td>
+                                <td>Invalid JSON syntax or missing required fields</td>
+                                <td>POST with missing 'email'</td>
+                            </tr>
+                            <tr>
+                                <td><code>404 Not Found</code></td>
+                                <td>Not Found</td>
+                                <td>Requested resource identifier does not exist</td>
+                                <td>GET /api/services/unknown</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="file-reference-box">
-                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/api.py">api.py</a>
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/api.py#L70-L180">api.py</a>
                     <div class="study-quick-links">
                         <a href="/api/health" target="_blank" class="btn btn-secondary study-quick-btn">Try /api/health →</a>
                         <a href="/api/services" target="_blank" class="btn btn-secondary study-quick-btn">Try /api/services →</a>
-                        <a href="/api/promo/validate?code=FLASK20" target="_blank" class="btn btn-secondary study-quick-btn">Try /api/promo/validate →</a>
+                        <a href="/api/promo/validate?code=FLASK20" target="_blank" class="btn btn-secondary study-quick-btn">Try /api/promo/validate?code=FLASK20 →</a>
                     </div>
                 </div>
             </div>
         </details>
 
-        <!-- 14. Flash Messages -->
+        <!-- 14. Flask Flash Messages, Login & Logout Flow, and Floating Toasts -->
         <details class="study-accordion" id="topic-flash">
             <summary class="accordion-summary">
                 <div class="summary-left">
@@ -537,42 +1553,834 @@ def create_inquiry():
                 </div>
             </summary>
             <div class="accordion-body">
-                <p><strong>Concept:</strong> Flash messages store temporary feedback notifications in user session cookies. When paired with authentication (<strong>Login</strong>, <strong>Logout</strong>, and protected routes), messages are displayed once on the next page via a floating <strong>Toast notification component</strong> with auto-dismiss timers instead of static page banners.</p>
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>Flash messaging provides a temporary notification channel across HTTP redirects. Integrated with authentication flows (Login, Logout, protected routes), messages are stored in encrypted session cookies and consumed once on the subsequent page load via floating Toast notifications.</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> Flash messages are queued in the user session cookie under <code>session['_flashes']</code> as a list of <code>(category, message)</code> tuples. Calling <code>get_flashed_messages(with_categories=True)</code> in Jinja consumes the queue, popping the messages and updating the session cookie. Unconsumed messages persist across redirects (such as PRG flows). Rather than displaying static inline banners that shift page content, modern UI architectures render messages in a floating Toast container pinned to the top-right of the viewport. A JavaScript controller tracks each toast, displays an SVG category icon, and automatically triggers smooth fade-out and slide-up dismissal after 4 seconds (with manual click-to-dismiss option).
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Authentication Check:</strong> User submits credentials via POST; server verifies against secure store.</li>
+                    <li><strong>Session & Flash Assignment:</strong> On success, store identity in <code>session['user']</code> and queue notification with <code>flash('Welcome back!', 'success')</code>.</li>
+                    <li><strong>HTTP 302 PRG Redirect:</strong> Server issues redirect to destination route (e.g. <code>url_for('home')</code>).</li>
+                    <li><strong>Flash Queue Consumption:</strong> Jinja invokes <code>get_flashed_messages()</code>, popping messages from session cookie.</li>
+                    <li><strong>Floating Toast Display & Auto-Dismiss:</strong> Toasts render in floating viewport container; JavaScript fades them out after 4 seconds.</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
                 <div class="code-block-wrapper">
                     <div class="code-header-bar">
                         <span>auth.py & template/components/toast.html</span>
                     </div>
-                    {% raw %}
-                    <pre><code># 1. Login flow in auth.py:
+                    <pre><code># In auth.py (Authentication Controller)
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    if check_credentials(username, password):
+    username = request.form.get("username", "").strip()
+    password = request.form.get("password", "").strip()
+
+    if verify_user(username, password):
         session["user"] = username
         flash(f"Welcome back, {username}! You have successfully logged in.", "success")
         return redirect(url_for("home"))
-    flash("Invalid credentials! Please try again.", "danger")
+
+    flash("Invalid username or password. Please try again.", "danger")
     return render_template("login.html")
 
-# 2. Rendered as Floating Toasts in toast.html:
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <div class="toast-container" id="toast-container">
-        {% for category, message in messages %}
-        <div class="toast-card toast-{{ category }}">
-            <span class="toast-icon">✓</span>
-            <div class="toast-content">{{ message }}</div>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-{% endwith %}</code></pre>
-                    {% endraw %}
+@auth_bp.route("/logout")
+def logout():
+    session.pop("user", None)
+    flash("You have been safely logged out.", "info")
+    return redirect(url_for("auth.login"))
+
+# -------------------------------------------------------------
+&lt;!-- In template/components/toast.html (Floating Toast Container) --&gt;
+&#123;% with messages = get_flashed_messages(with_categories=true) %&#125;
+    &#123;% if messages %&#125;
+    &lt;div class="toast-container" id="toast-container"&gt;
+        &#123;% for category, message in messages %&#125;
+        &lt;div class="toast-card toast-&#123;&#123; category &#125;&#125;" role="alert"&gt;
+            &lt;span class="toast-icon"&gt;✓&lt;/span&gt;
+            &lt;div class="toast-content"&gt;&#123;&#123; message &#125;&#125;&lt;/div&gt;
+            &lt;button type="button" class="toast-close" onclick="this.parentElement.remove()"&gt;×&lt;/button&gt;
+        &lt;/div&gt;
+        &#123;% endfor %&#125;
+    &lt;/div&gt;
+    &#123;% endif %&#125;
+&#123;% endwith %&#125;</code></pre>
                 </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>Missing Secret Key:</strong> Forgetting <code>app.secret_key</code> causes <code>flash()</code> to crash with a <code>RuntimeError</code>.<br><strong>Multiple Flash Pops:</strong> Calling <code>get_flashed_messages()</code> multiple times in different templates or partials drains the queue on the first call, leaving subsequent calls empty.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Toast Category</th>
+                                <th>UI Color Token</th>
+                                <th>Icon</th>
+                                <th>Semantic Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>success</code></td>
+                                <td>Emerald (<code>--accent-emerald</code>)</td>
+                                <td>✓ Checkmark</td>
+                                <td>Successful login, form submissions, record creation</td>
+                            </tr>
+                            <tr>
+                                <td><code>danger</code></td>
+                                <td>Rose (<code>--accent-rose</code>)</td>
+                                <td>✕ Warning cross</td>
+                                <td>Authentication errors, validation failures, deletions</td>
+                            </tr>
+                            <tr>
+                                <td><code>warning</code></td>
+                                <td>Amber (<code>--accent-amber</code>)</td>
+                                <td>⚠ Exclamation mark</td>
+                                <td>Session timeouts, missing permissions, alerts</td>
+                            </tr>
+                            <tr>
+                                <td><code>info</code></td>
+                                <td>Cyan (<code>--accent-cyan</code>)</td>
+                                <td>ℹ Info badge</td>
+                                <td>Logout confirmations, system notifications, status updates</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="file-reference-box">
-                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/auth.py">auth.py</a>, <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/login.html">login.html</a>, and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/components/toast.html">components/toast.html</a>
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/auth.py#L23-L101">auth.py & template/components/toast.html</a>
                     <div class="study-quick-links">
-                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary study-quick-btn">Try Login Page & Toast →</a>
-                        <a href="{{ url_for('flash_demo.flash_page') }}" class="btn btn-secondary study-quick-btn">Open Flash Demo Playground →</a>
+                        <a href="/login" target="_blank" class="btn btn-primary study-quick-btn">Try Login Flow & Toast →</a>
+                        <a href="/flash-demo" target="_blank" class="btn btn-secondary study-quick-btn">Open Flash Demo Playground →</a>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <!-- 15. Custom Error Handling & HTTP Status Code Pages (@app.errorhandler) -->
+        <details class="study-accordion" id="topic-error-handling">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">15</span>
+                    <span class="topic-title">Custom Error Handling & HTTP Status Code Pages (@app.errorhandler)</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">main.py & 404.html</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>Production web applications should handle HTTP errors (404 Not Found, 500 Internal Server Error, 403 Forbidden) gracefully rather than exposing raw browser defaults or server stack traces. Using <code>@app.errorhandler()</code> allows rendering branded error pages and delivering structured JSON error responses for API clients.</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> When an unhandled exception occurs or a route invokes <code>abort(404)</code>, Werkzeug raises a subclass of <code>HTTPException</code>. Flask intercepts the exception and checks for a matching handler registered via <code>@app.errorhandler(404)</code>. If the client requested an API endpoint (verified via <code>request.path.startswith('/api/')</code> or checking the <code>Accept</code> header), the handler returns a JSON error payload. Crucially, when returning a custom error template, developers must return an explicit status code tuple (e.g. <code>return render_template('404.html'), 404</code>). If omitted, Flask defaults to an HTTP 200 OK status code, which impairs SEO crawling and client error handling.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Error Inception:</strong> A non-existent path is requested or <code>abort(404)</code> is invoked.</li>
+                    <li><strong>Exception Interception:</strong> Flask halts normal processing and searches <code>app.error_handler_spec</code> for a matching handler.</li>
+                    <li><strong>Content Negotiation:</strong> The handler inspects <code>request.path</code> or <code>Accept</code> headers to distinguish API requests from browser visits.</li>
+                    <li><strong>Custom Response Rendering:</strong> Renders <code>404.html</code> for web browsers or generates a JSON error object for API clients.</li>
+                    <li><strong>Explicit Status Code Tuple Delivery:</strong> Returns the response paired with the integer error status code (404 or 500).</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>main.py & template/404.html</span>
+                    </div>
+                    <pre><code>from flask import render_template, request
+
+# 1. Custom 404 Not Found Handler with API Content Negotiation
+@app.errorhandler(404)
+def page_not_found(error):
+    # API endpoints receive structured JSON error payloads
+    if request.path.startswith("/api/"):
+        return {"success": False, "error": "Endpoint not found", "code": 404}, 404
+
+    # Web pages receive customized glassmorphic error page
+    # Note: The second element in the return tuple (404) is mandatory!
+    return render_template("404.html", error=error), 404
+
+# 2. Custom 500 Internal Server Error Handler
+@app.errorhandler(500)
+def internal_server_error(error):
+    if request.path.startswith("/api/"):
+        return {"success": False, "error": "Internal server error", "code": 500}, 500
+
+    return render_template(
+        "404.html",
+        error=error,
+        error_code=500,
+        error_title="Internal Server Error"
+    ), 500</code></pre>
+                </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>Omitting the Status Code Tuple:</strong> Writing <code>return render_template('404.html')</code> without <code>, 404</code> causes Flask to return an HTTP 200 OK status code, misleading search engines into indexing error pages.<br><strong>Failing to Handle 500 Errors:</strong> Unhandled exceptions in production can leak internal variable names, file paths, and database details in the default traceback.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Error Code</th>
+                                <th>Exception Class</th>
+                                <th>Trigger Condition</th>
+                                <th>Standard Response</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>400</code></td>
+                                <td><code>BadRequest</code></td>
+                                <td>Missing required form fields, invalid JSON payload</td>
+                                <td>Custom 400 error message</td>
+                            </tr>
+                            <tr>
+                                <td><code>401</code></td>
+                                <td><code>Unauthorized</code></td>
+                                <td>User unauthenticated for protected route</td>
+                                <td>Redirect to /login with flash toast</td>
+                            </tr>
+                            <tr>
+                                <td><code>403</code></td>
+                                <td><code>Forbidden</code></td>
+                                <td>User authenticated but lacks permission</td>
+                                <td>403 Access Denied template</td>
+                            </tr>
+                            <tr>
+                                <td><code>404</code></td>
+                                <td><code>NotFound</code></td>
+                                <td>Requested URL path does not exist on server</td>
+                                <td>Custom 404.html template</td>
+                            </tr>
+                            <tr>
+                                <td><code>405</code></td>
+                                <td><code>MethodNotAllowed</code></td>
+                                <td>POST sent to GET-only route</td>
+                                <td>HTTP 405 Method Not Allowed header</td>
+                            </tr>
+                            <tr>
+                                <td><code>500</code></td>
+                                <td><code>InternalServerError</code></td>
+                                <td>Unhandled Python exception or database failure</td>
+                                <td>Custom 500.html template</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py">main.py & template/404.html</a>
+                    <div class="study-quick-links">
+                        <a href="/non-existent-page" target="_blank" class="btn btn-secondary study-quick-btn">Trigger 404 Page (/non-existent-page) →</a>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <!-- 16. Application & Request Context Lifecycle (current_app, g & Proxies) -->
+        <details class="study-accordion" id="topic-context-lifecycle">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">16</span>
+                    <span class="topic-title">Application & Request Context Lifecycle (current_app, g & Proxies)</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">main.py & auth.py</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>Flask uses context locals to handle concurrent requests in multi-threaded environments without requiring you to pass <code>request</code> or <code>app</code> arguments to every function. It manages two context tiers: the <strong>Application Context</strong> (exposing <code>current_app</code> and <code>g</code>) and the <strong>Request Context</strong> (exposing <code>request</code> and <code>session</code>).</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> Behind the scenes, Flask manages context isolation using Python's <code>contextvars</code> (or Werkzeug's <code>LocalStack</code>). When an incoming HTTP request arrives at the WSGI entry point, Flask pushes both an application context and a request context onto thread-local storage. The variables <code>request</code>, <code>session</code>, <code>current_app</code>, and <code>g</code> are actually instances of <code>werkzeug.local.LocalProxy</code>: whenever you access an attribute (such as <code>request.method</code>), the proxy forwards the lookup to the active context of the current thread or async task. The <code>flask.g</code> object provides a per-request namespace for temporary data (such as database connections or user identity) that is automatically torn down when the request finishes.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Request Arrival:</strong> WSGI server receives request and creates <code>RequestContext</code> and <code>AppContext</code>.</li>
+                    <li><strong>Context Push:</strong> Flask pushes both contexts; <code>LocalProxy</code> instances bind to current thread/task.</li>
+                    <li><strong>Pre-Request Hooks Execution:</strong> Functions decorated with <code>@app.before_request</code> execute, often attaching data to <code>g</code>.</li>
+                    <li><strong>View Function Execution:</strong> View logic accesses <code>request</code> and <code>g</code> directly without explicit parameter passing.</li>
+                    <li><strong>Teardown & Cleanup:</strong> <code>@app.teardown_appcontext</code> executes to close database handles; contexts are popped and destroyed.</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>Application Lifecycle Example</span>
+                    </div>
+                    <pre><code>from flask import Flask, g, request, current_app, render_template
+import time
+
+app = Flask(__name__, template_folder="template")
+
+# 1. Store request-scoped data in g during before_request hook
+@app.before_request
+def start_request_timer():
+    g.start_time = time.time()
+    # Cache user identity or database connection on g:
+    g.client_ip = request.remote_addr
+
+# 2. Access g and current_app inside view functions
+@app.route("/status")
+def server_status():
+    duration = time.time() - g.start_time
+    app_name = current_app.name
+    return {
+        "app": app_name,
+        "client_ip": g.client_ip,
+        "processing_time_ms": round(duration * 1000, 2)
+    }
+
+# 3. Teardown hook executes when request completes (guaranteed execution)
+@app.teardown_appcontext
+def cleanup_resources(exception=None):
+    db = g.pop("db_connection", None)
+    if db is not None:
+        db.close()</code></pre>
+                </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>Working Outside Context Error:</strong> Accessing <code>request</code> or <code>current_app</code> inside background threads, Celery tasks, or standalone scripts raises <code>RuntimeError: Working outside of request context</code>. Use <code>with app.app_context():</code> to push contexts manually.<br><strong>Confusing g with session:</strong> Data stored on <code>g</code> is destroyed as soon as the current request ends; use <code>session</code> for data that must persist across subsequent requests.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Context</th>
+                                <th>Exposed Proxies</th>
+                                <th>Lifetime</th>
+                                <th>Primary Responsibility</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>Application Context</code></td>
+                                <td><code>current_app</code>, <code>g</code></td>
+                                <td>Duration of request or CLI command</td>
+                                <td>Global app config, database connections, logger</td>
+                            </tr>
+                            <tr>
+                                <td><code>Request Context</code></td>
+                                <td><code>request</code>, <code>session</code></td>
+                                <td>Single HTTP request transaction</td>
+                                <td>HTTP headers, query args, cookies, form data</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py">main.py & auth.py</a>
+                    <div class="study-quick-links">
+                        <a href="/" target="_blank" class="btn btn-secondary study-quick-btn">View App Initialization in main.py →</a>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <!-- 17. Custom Response Objects, Headers & Cookie Management (make_response) -->
+        <details class="study-accordion" id="topic-response-objects">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">17</span>
+                    <span class="topic-title">Custom Response Objects, Headers & Cookie Management (make_response)</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">main.py & api.py</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>While Flask view functions can return simple strings, templates, or dictionaries, creating explicit <code>Response</code> objects via <code>make_response()</code> allows fine-grained control over HTTP status codes, custom security headers, MIME types, and browser cookies.</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> Flask view functions can return three formats: a string (converted to 200 OK), a tuple (<code>body, status, headers</code>), or a <code>Response</code> object. Calling <code>make_response(render_template(...))</code> gives you direct access to the underlying Werkzeug <code>Response</code> instance. This allows setting cookies via <code>response.set_cookie()</code> with essential security flags: <code>httponly=True</code> (prevents client JavaScript from reading the cookie, mitigating XSS theft), <code>samesite='Lax'</code> (mitigates CSRF vulnerabilities), and <code>secure=True</code> (ensures cookies are transmitted only over encrypted HTTPS). You can also configure security headers like <code>X-Content-Type-Options: nosniff</code> and HTTP caching policies.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Template or Data Generation:</strong> Render HTML template or serialize JSON data.</li>
+                    <li><strong>Response Wrapping via make_response:</strong> Wrap output into a <code>Response</code> instance.</li>
+                    <li><strong>Cookie Setting with Security Flags:</strong> Call <code>response.set_cookie()</code> with <code>httponly=True</code> and <code>samesite='Lax'</code>.</li>
+                    <li><strong>Custom Header Attachment:</strong> Attach security, CORS, or caching headers to <code>response.headers</code>.</li>
+                    <li><strong>Response Dispatch:</strong> Return completed response object to WSGI server.</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>Custom Response & Cookie Management</span>
+                    </div>
+                    <pre><code>from flask import make_response, render_template, request
+
+@app.route("/set-theme/&lt;theme_name&gt;")
+def set_theme(theme_name):
+    # 1. Create explicit Response object from rendered template
+    response = make_response(render_template("home.html"))
+
+    # 2. Set persistent client cookie with security flags
+    response.set_cookie(
+        key="site_theme",
+        value=theme_name,
+        max_age=60 * 60 * 24 * 30,  # 30 days expiration
+        httponly=True,              # Mitigates XSS cookie theft
+        samesite="Lax",             # Mitigates CSRF vulnerabilities
+        secure=False                # Set to True on production HTTPS
+    )
+
+    # 3. Add custom HTTP security &amp; caching headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+
+    return response
+
+@app.route("/clear-theme")
+def clear_theme():
+    response = make_response(render_template("home.html"))
+    response.delete_cookie("site_theme")
+    return response</code></pre>
+                </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>Missing HttpOnly Flag:</strong> Setting sensitive cookies without <code>httponly=True</code> allows any malicious JavaScript executed via an XSS flaw to read <code>document.cookie</code>.<br><strong>Setting Cookies on Strings:</strong> Calling <code>set_cookie()</code> on the return value of <code>render_template()</code> raises an <code>AttributeError</code> because strings lack cookie methods. Always wrap in <code>make_response()</code>.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Cookie Parameter</th>
+                                <th>Type</th>
+                                <th>Security Impact</th>
+                                <th>Recommended Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>httponly</code></td>
+                                <td>bool</td>
+                                <td>Blocks client-side JavaScript access via <code>document.cookie</code></td>
+                                <td><code>True</code> (mandatory for auth)</td>
+                            </tr>
+                            <tr>
+                                <td><code>samesite</code></td>
+                                <td>str</td>
+                                <td>Prevents browser from sending cookie on cross-site requests</td>
+                                <td><code>'Lax'</code> or <code>'Strict'</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>secure</code></td>
+                                <td>bool</td>
+                                <td>Restricts cookie transmission strictly to HTTPS connections</td>
+                                <td><code>True</code> in production</td>
+                            </tr>
+                            <tr>
+                                <td><code>max_age</code></td>
+                                <td>int</td>
+                                <td>Cookie lifespan in seconds</td>
+                                <td>e.g. <code>2592000</code> (30 days)</td>
+                            </tr>
+                            <tr>
+                                <td><code>path</code></td>
+                                <td>str</td>
+                                <td>Limits cookie availability to specific URL subdirectories</td>
+                                <td><code>'/'</code> (entire site)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py">main.py & api.py</a>
+                    <div class="study-quick-links">
+                        <a href="/" target="_blank" class="btn btn-secondary study-quick-btn">Inspect Response Handling in main.py →</a>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <!-- 18. Jinja2 Filters, Custom Template Filters & Safe Escaping -->
+        <details class="study-accordion" id="topic-jinja-filters">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">18</span>
+                    <span class="topic-title">Jinja2 Filters, Custom Template Filters & Safe Escaping</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">main.py & study.html</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>Jinja2 filters transform and format variable outputs inside templates using the pipe operator (<code>|</code>). Flask enables automatic HTML entity escaping by default on templates to defend against Cross-Site Scripting (XSS). Custom Python functions can be registered as template filters using <code>@app.template_filter()</code>.</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> When Jinja processes an expression like <code>&#123;&#123; value | filter_name &#125;&#125;</code>, it passes the value as the first argument to the filter function. Multiple filters can be chained sequentially: <code>&#123;&#123; title | striptags | title &#125;&#125;</code>. Jinja's automatic escaping converts characters like <code>&lt;</code>, <code>&gt;</code>, <code>&amp;</code>, and <code>&quot;</code> into HTML entities. The <code>| safe</code> filter marks a string as safe HTML, disabling auto-escaping. If untrusted user inputs are passed into <code>| safe</code>, attackers can inject arbitrary <code>&lt;script&gt;</code> tags. When passing Python objects into JavaScript inside templates, always use the <code>| tojson</code> filter to ensure valid, safe JSON serialization.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Filter Function Registration:</strong> Define a Python function and decorate it with <code>@app.template_filter('name')</code> in <code>main.py</code>.</li>
+                    <li><strong>Template Application:</strong> Apply the filter in Jinja using pipe syntax: <code>&#123;&#123; price | currency &#125;&#125;</code>.</li>
+                    <li><strong>Chaining Multiple Filters:</strong> Chain transformations from left to right: <code>&#123;&#123; text | default('N/A') | upper &#125;&#125;</code>.</li>
+                    <li><strong>Safe Escaping Verification:</strong> Ensure user-supplied variables are auto-escaped; avoid <code>| safe</code> on unsanitized input.</li>
+                    <li><strong>Client Serialization:</strong> Use <code>| tojson</code> when embedding Python data into client-side JavaScript.</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>main.py (Filter Registration) & Template Usage</span>
+                    </div>
+                    <pre><code># In main.py: Registering custom template filter
+@app.template_filter("currency")
+def currency_filter(value):
+    """Formats a numeric price into a localized USD currency string."""
+    if value is None:
+        return "Custom Quote"
+    try:
+        return f"${float(value):,.2f}"
+    except (ValueError, TypeError):
+        return str(value)
+
+# -------------------------------------------------------------
+&lt;!-- In Jinja Template: Usage Examples --&gt;
+&lt;!-- 1. Custom Currency Filter --&gt;
+&lt;p&gt;Starter Plan: &#123;&#123; 499 | currency &#125;&#125;&lt;/p&gt;
+&lt;!-- Renders: $499.00 --&gt;
+
+&lt;!-- 2. Built-in Fallback Default Filter --&gt;
+&lt;p&gt;User Bio: &#123;&#123; user_bio | default('No bio provided yet.', boolean=True) &#125;&#125;&lt;/p&gt;
+
+&lt;!-- 3. Safe Embedding of Python Data into JavaScript --&gt;
+&lt;script&gt;
+    const teamMembers = &#123;&#123; team | tojson &#125;&#125;;
+    console.log("Loaded team members:", teamMembers);
+&lt;/script&gt;
+
+&lt;!-- 4. HTML Stripping --&gt;
+&lt;p&gt;Preview: &#123;&#123; raw_html_content | striptags | truncate(100) &#125;&#125;&lt;/p&gt;</code></pre>
+                </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>XSS via | safe Filter:</strong> Applying <code>&#123;&#123; user_comment | safe &#125;&#125;</code> on unescaped user input allows malicious users to inject <code>&lt;script&gt;</code> tags and steal session cookies.<br><strong>Missing boolean=True in default:</strong> By default, <code>| default('fallback')</code> only activates on <code>Undefined</code> variables, not empty strings (<code>""</code>). Use <code>| default('fallback', boolean=True)</code> to catch both.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Filter</th>
+                                <th>Syntax</th>
+                                <th>Operation</th>
+                                <th>Example</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>currency</code> (custom)</td>
+                                <td><code>&#123;&#123; 1299 | currency &#125;&#125;</code></td>
+                                <td>Formats number into USD currency string</td>
+                                <td><code>$1,299.00</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>default</code></td>
+                                <td><code>&#123;&#123; val | default('N/A', boolean=True) &#125;&#125;</code></td>
+                                <td>Provides fallback if variable is None or empty</td>
+                                <td><code>N/A</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>tojson</code></td>
+                                <td><code>&#123;&#123; py_data | tojson &#125;&#125;</code></td>
+                                <td>Safely converts Python data into valid JavaScript JSON</td>
+                                <td><code>[{"id": 1}]</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>striptags</code></td>
+                                <td><code>&#123;&#123; html | striptags &#125;&#125;</code></td>
+                                <td>Strips all SGML/HTML tags from string</td>
+                                <td><code>Plain text</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>length</code></td>
+                                <td><code>&#123;&#123; list | length &#125;&#125;</code></td>
+                                <td>Returns element count of list, dict, or string</td>
+                                <td><code>4</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>round</code></td>
+                                <td><code>&#123;&#123; 3.14159 | round(2) &#125;&#125;</code></td>
+                                <td>Rounds float to specified decimal places</td>
+                                <td><code>3.14</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py">main.py & template/study.html</a>
+                    <div class="study-quick-links">
+                        <a href="/" target="_blank" class="btn btn-secondary study-quick-btn">Inspect Currency Filter in main.py →</a>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <!-- 19. Session Security, Cryptographic Signing & CSRF Protection -->
+        <details class="study-accordion" id="topic-session-security">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">19</span>
+                    <span class="topic-title">Session Security, Cryptographic Signing & CSRF Protection</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">main.py & auth.py</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>Unlike frameworks that store session data in server-side databases by default, Flask uses <strong>client-side cryptographically signed cookies</strong> powered by <code>itsdangerous</code>. Understanding session structure, key entropy, and Cross-Site Request Forgery (CSRF) mitigation is critical for application security.</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> A Flask session cookie consists of three base64-encoded segments separated by dots: <code>Payload.Timestamp.Signature</code>. The Payload contains serialized JSON session state; it is base64-encoded, <em>not encrypted</em>, meaning clients can read its contents. The Timestamp tracks issuance for expiration checks. The Signature is a cryptographic HMAC-SHA256 hash computed with <code>app.secret_key</code>. If a client tampers with the cookie (e.g. altering <code>user: guest</code> to <code>user: admin</code>), the server's recomputed HMAC will not match, and Flask will automatically discard the session. Cross-Site Request Forgery (CSRF) occurs when unauthorized external websites trick a user's browser into submitting malicious POST requests; setting <code>SESSION_COOKIE_SAMESITE = 'Lax'</code> and validating CSRF tokens mitigates this threat.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Session State Mutation:</strong> View sets data: <code>session['user'] = 'shrikant'</code>.</li>
+                    <li><strong>JSON Serialization:</strong> Flask serializes session dictionary into a JSON string payload.</li>
+                    <li><strong>Cryptographic HMAC Signing:</strong> <code>itsdangerous</code> computes an HMAC-SHA256 signature using <code>app.secret_key</code>.</li>
+                    <li><strong>Cookie Dispatch:</strong> Browser receives signed cookie in the HTTP <code>Set-Cookie</code> header.</li>
+                    <li><strong>Tamper Verification on Inbound Request:</strong> On subsequent requests, Flask recalculates the HMAC; invalid signatures reset the session.</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>main.py & Session Security Configuration</span>
+                    </div>
+                    <pre><code>import os
+import secrets
+from datetime import timedelta
+from flask import Flask, session
+
+app = Flask(__name__, template_folder="template")
+
+# 1. Cryptographically Secure Secret Key Generation
+# Generate via: python -c "import secrets; print(secrets.token_hex(32))"
+app.secret_key = os.environ.get("SECRET_KEY", "flaskcraft-dev-secret-key-2026")
+
+# 2. Strict Session Cookie Hardening Configuration
+app.config.update(
+    # Mitigates XSS cookie exfiltration
+    SESSION_COOKIE_HTTPONLY=True,
+    # Restricts cookie transmission strictly to HTTPS in production
+    SESSION_COOKIE_SECURE=False, # Set to True in production HTTPS
+    # Mitigates Cross-Site Request Forgery (CSRF) attacks
+    SESSION_COOKIE_SAMESITE="Lax",
+    # Controls session cookie lifespan (e.g. 7 days)
+    PERMANENT_SESSION_LIFETIME=timedelta(days=7)
+)
+
+@app.before_request
+def make_session_permanent():
+    # Enforces lifetime expiration across browser restarts
+    session.permanent = True</code></pre>
+                </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>Storing Sensitive Data in Session:</strong> Flask session cookies are signed, NOT encrypted! Anyone who inspects their browser cookies can decode the base64 payload. Never store passwords, API secrets, or credit card numbers in <code>session</code>.<br><strong>Predictable Secret Keys:</strong> Using predictable keys like <code>app.secret_key = 'secret'</code> allows attackers to compute valid signatures and forge arbitrary session identities.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Config Option</th>
+                                <th>Type</th>
+                                <th>Security Purpose</th>
+                                <th>Production Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>SECRET_KEY</code></td>
+                                <td>str / bytes</td>
+                                <td>Cryptographic seed for HMAC-SHA256 signature calculation</td>
+                                <td>Random 64-char hex string</td>
+                            </tr>
+                            <tr>
+                                <td><code>SESSION_COOKIE_HTTPONLY</code></td>
+                                <td>bool</td>
+                                <td>Blocks JavaScript access to session cookie</td>
+                                <td><code>True</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>SESSION_COOKIE_SECURE</code></td>
+                                <td>bool</td>
+                                <td>Restricts cookie transmission strictly to HTTPS</td>
+                                <td><code>True</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>SESSION_COOKIE_SAMESITE</code></td>
+                                <td>str</td>
+                                <td>Defends against Cross-Site Request Forgery (CSRF)</td>
+                                <td><code>'Lax'</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>PERMANENT_SESSION_LIFETIME</code></td>
+                                <td>timedelta</td>
+                                <td>Controls session expiration interval</td>
+                                <td><code>timedelta(days=7)</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/auth.py#L46-L56">main.py & auth.py</a>
+                    <div class="study-quick-links">
+                        <a href="/login" target="_blank" class="btn btn-secondary study-quick-btn">Inspect Session Handling in auth.py →</a>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <!-- 20. Modular CSS Architecture & Scalable Frontend Design in Flask -->
+        <details class="study-accordion" id="topic-modular-css">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">20</span>
+                    <span class="topic-title">Modular CSS Architecture & Scalable Frontend Design in Flask</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">static/css/ & base.html</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <h4 class="study-section-title"><span>🧠</span> Architectural Concept & Under-the-Hood Mechanics</h4>
+                <p>Monolithic stylesheets lead to specificity collisions, bloated payloads, and maintenance issues. FlaskCraft implements a two-tier modular CSS architecture: global design tokens and primitives in <code>base.css</code> paired with page-specific modules (<code>home.css</code>, <code>service.css</code>, <code>study.css</code>, etc.) injected on demand via Jinja's <code>&#123;% block extra_css %&#125;</code>, with strict adherence to zero inline CSS.</p>
+                <div class="mechanics-box">
+                    <strong>How Flask Works Under the Hood:</strong> The modular architecture separates styles into two layers: <strong>Tier 1 - Global Design System (<code>base.css</code>)</strong> defines CSS custom properties (colors, typography, shadows, border radii), global resets, and shared primitives (<code>.btn</code>, <code>.form-control</code>, <code>.glass-card</code>, <code>.toast-card</code>). <strong>Tier 2 - Page-Specific Feature Stylesheets</strong> (<code>about.css</code>, <code>contact.css</code>, <code>service.css</code>, <code>study.css</code>) contain only the layout rules and components unique to that template. Child templates inject their respective stylesheet in the document head using <code>&#123;% block extra_css %&#125;</code>. Eliminating inline <code>style="..."</code> attributes supports Content Security Policy (CSP) compliance, improves browser caching, and keeps presentation logic cleanly decoupled from HTML structure.
+                </div>
+
+                <h4 class="study-section-title"><span>⚙️</span> Step-by-Step Execution Lifecycle</h4>
+                <ol class="study-steps-list">
+                    <li><strong>Global Design Tokens Initialization:</strong> Define color palettes, typography, spacing, and glassmorphic variables in <code>static/css/base.css</code>.</li>
+                    <li><strong>Component Primitives Isolation:</strong> Build reusable UI primitives (buttons, inputs, cards) once in <code>base.css</code>.</li>
+                    <li><strong>Feature Stylesheet Splitting:</strong> Extract page-specific styles into separate files (<code>about.css</code>, <code>service.css</code>, <code>study.css</code>).</li>
+                    <li><strong>Template Head Injection:</strong> Child templates inject their stylesheet using <code>&#123;% block extra_css %&#125;</code> in <code>&lt;head&gt;</code>.</li>
+                    <li><strong>Strict Zero-Inline-CSS Enforcement:</strong> Ensure all styles are driven by semantic CSS classes and IDs, keeping HTML markup completely clean.</li>
+                </ol>
+
+                <h4 class="study-section-title"><span>💻</span> Production-Grade Code Implementation</h4>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>Modular CSS Architecture Breakdown</span>
+                    </div>
+                    <pre><code>/* Directory Structure:
+static/css/
+  ├── base.css       &lt;- Global tokens, CSS reset, navbar, footer, buttons, toasts
+  ├── home.css       &lt;- Hero showcase, feature grid, CTAs
+  ├── about.css      &lt;- Team cards, timeline, milestone badges
+  ├── service.css    &lt;- Pricing matrix, query promo voucher controls
+  ├── contact.css    &lt;- Glassmorphic contact form, copy email button
+  ├── auth.css       &lt;- Login card, demo credentials panel
+  ├── flash.css      &lt;- Floating toast animations &amp; notification categories
+  ├── study.css      &lt;- Accordion components, search filtering, code blocks
+  └── style.css      &lt;- Master production bundle importing all modules
+
+&lt;!-- Child Template Injection via Jinja Block: --&gt;
+&#123;% extends "base.html" %&#125;
+
+&#123;% block extra_css %&#125;
+&lt;!-- Only loads study.css on the study guide page, avoiding stylesheet bloat --&gt;
+&lt;link rel="stylesheet" href="/static/css/study.css"&gt;
+&#123;% endblock %&#125;</code></pre>
+                </div>
+
+                <h4 class="study-section-title"><span>⚠️</span> Common Pitfalls, Gotchas & Security Traps</h4>
+                <div class="pitfall-box">
+                    <strong>Using Inline Styles:</strong> Adding <code>style="color: red;"</code> directly on HTML tags violates Content Security Policy (CSP), bypasses browser caching, and complicates maintenance.<br><strong>Global Utility Class Overrides:</strong> Overriding global utility classes (like <code>.btn</code> or <code>.form-control</code>) inside page-specific stylesheets introduces side effects on other pages. Always use scoped selector prefixes.
+                </div>
+
+                <h4 class="study-section-title"><span>📊</span> Technical Reference & Attributes Matrix</h4>
+                <div class="study-table-wrapper">
+                    <table class="study-table">
+                        <thead>
+                            <tr>
+                                <th>Stylesheet Module</th>
+                                <th>File Path</th>
+                                <th>Scope & Contents</th>
+                                <th>Included Via</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>base.css</code></td>
+                                <td><code>static/css/base.css</code></td>
+                                <td>Global CSS variables, reset, layout grid, buttons, toasts</td>
+                                <td><code>base.html</code> (site-wide)</td>
+                            </tr>
+                            <tr>
+                                <td><code>study.css</code></td>
+                                <td><code>static/css/study.css</code></td>
+                                <td>Interactive accordions, search filter bar, callout boxes</td>
+                                <td><code>&#123;% block extra_css %&#125;</code> in <code>study.html</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>service.css</code></td>
+                                <td><code>static/css/service.css</code></td>
+                                <td>Pricing cards, promo code input, tier filter buttons</td>
+                                <td><code>&#123;% block extra_css %&#125;</code> in <code>service.html</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>contact.css</code></td>
+                                <td><code>static/css/contact.css</code></td>
+                                <td>Glassmorphic contact form, copy email button states</td>
+                                <td><code>&#123;% block extra_css %&#125;</code> in <code>contact.html</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>auth.css</code></td>
+                                <td><code>static/css/auth.css</code></td>
+                                <td>Login authentication card, credential chips</td>
+                                <td><code>&#123;% block extra_css %&#125;</code> in <code>login.html</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/static/css/base.css">template/base.html & static/css/</a>
+                    <div class="study-quick-links">
+                        <a href="/static/css/base.css" target="_blank" class="btn btn-secondary study-quick-btn">Inspect Base Stylesheet →</a>
+                        <a href="/static/css/study.css" target="_blank" class="btn btn-secondary study-quick-btn">Inspect Study Stylesheet →</a>
                     </div>
                 </div>
             </div>
@@ -585,24 +2393,23 @@ def login():
 {% block scripts %}
 <script>
 function filterAccordions() {
-    const input = document.getElementById('study-search-input').value.toLowerCase();
-    const accordions = document.querySelectorAll('.study-accordion');
-    
+    const input = document.getElementById("study-search-input").value.toLowerCase();
+    const accordions = document.querySelectorAll(".study-accordion");
     accordions.forEach(acc => {
         const text = acc.innerText.toLowerCase();
         if (text.includes(input)) {
-            acc.style.display = 'block';
+            acc.style.display = "block";
             if (input.length > 2) {
                 acc.open = true;
             }
         } else {
-            acc.style.display = 'none';
+            acc.style.display = "none";
         }
     });
 }
 
 function toggleAllAccordions(shouldOpen) {
-    document.querySelectorAll('.study-accordion').forEach(acc => {
+    document.querySelectorAll(".study-accordion").forEach(acc => {
         acc.open = shouldOpen;
     });
 }
