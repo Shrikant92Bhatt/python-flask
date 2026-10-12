@@ -3,6 +3,11 @@
 {% block title %}Home | FlaskCraft Modern Web App{% endblock %}
 {% block meta_description %}Explore our high-performance Flask starter website featuring responsive glassmorphism, multi-page routing, and clean modular code.{% endblock %}
 
+{% block extra_css %}
+<!-- Page-Specific Modular CSS: Home Page -->
+<link rel="stylesheet" href="/static/css/home.css">
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <!-- Hero Section -->
@@ -24,6 +29,14 @@
             <a href="{{ url_for('contact') }}" class="btn btn-secondary" id="hero-cta-contact">
                 <span>Get in Touch</span>
             </a>
+        </div>
+
+        <!-- Asset loaded via Flask's url_for() helper -->
+        <div class="hero-graphic-container" id="hero-graphic-container">
+            <img src="{{ url_for('static', filename='images/hero-art.svg') }}" alt="Flask Architecture Graphic" class="hero-graphic-img" id="hero-graphic-img">
+            <p class="hero-graphic-caption" id="hero-graphic-caption">
+                Image asset loaded via <code>url_for('static', filename='images/hero-art.svg')</code>
+            </p>
         </div>
     </section>
 

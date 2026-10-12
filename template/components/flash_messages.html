@@ -1,0 +1,26 @@
+<!-- Flash Messages Component -->
+<!-- Rendered across all templates via get_flashed_messages(with_categories=True) -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container" id="flash-container" role="region" aria-label="System Notifications">
+        {% for category, message in messages %}
+        <div class="flash-alert flash-{{ category }}" role="alert" id="flash-msg-{{ loop.index }}">
+            <div class="flash-icon">
+                {% if category == 'success' %}✓
+                {% elif category == 'warning' %}⚠️
+                {% elif category == 'danger' %}✕
+                {% else %}ℹ️
+                {% endif %}
+            </div>
+            <div class="flash-content">
+                <span class="flash-category-badge">{{ category | upper }}</span>
+                <span class="flash-text">{{ message }}</span>
+            </div>
+            <button type="button" class="flash-close-btn" aria-label="Dismiss alert" onclick="this.closest('.flash-alert').remove()">
+                ✕
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endwith %}

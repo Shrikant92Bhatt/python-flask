@@ -1,0 +1,35 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "elif",
+    "endfor",
+    "endraw",
+    "endwith",
+    "FlaskCraft",
+    "flaskcraft",
+    "Glassmorphic",
+    "glassmorphic",
+    "Glassmorphism",
+    "glassmorphism",
+    "Gunicorn",
+    "gunicorn",
+    "jsonify",
+    "Pythonic",
+    "pycache",
+    "Shrikant",
+    "shrikant",
+    "Stylesheet",
+    "stylesheets",
+    "venv",
+    "Werkzeug",
+    "WSGI",
+    "wsgi"
+  ],
+  "ignorePaths": [
+    "node_modules",
+    ".git",
+    ".venv",
+    "__pycache__"
+  ]
+}

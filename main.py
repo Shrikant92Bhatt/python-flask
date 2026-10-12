@@ -1,7 +1,16 @@
-
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session, flash, redirect, url_for
+from api import api_bp
+from flash_demo import flash_bp
+from auth import auth_bp
 
 app = Flask(__name__, template_folder="template")
+# Secret key is required for secure signed session cookies (used by flash messages and auth sessions)
+app.secret_key = "flaskcraft-dev-secret-key-2026"
+
+# Register modular blueprints from separate files
+app.register_blueprint(api_bp)
+app.register_blueprint(flash_bp)
+app.register_blueprint(auth_bp)
 
 @app.route("/")
 def home():
@@ -95,7 +104,39 @@ def about():
 
 @app.route("/service")
 def service():
-    return render_template("service.html")
+    # 1. Read query parameters from URL: /service?tier=pro&promo=FLASK20
+    # request.args.get(key, default_value)
+    selected_tier = request.args.get("tier", default="all")
+    discount_code = request.args.get("promo", default="FLASK20").strip()
+
+    # Pre-defined promotional discounts dictionary
+    valid_promos = {
+        "FLASK20": 20,
+        "SUMMER50": 50,
+        "WELCOME10": 10,
+        "VIP100": 100,
+    }
+    discount_percent = valid_promos.get(discount_code.upper(), 0) if discount_code else 0
+
+    print("=" * 40)
+    print("URL Query Parameters Received in Python:")
+    print(f"  tier  = {selected_tier}")
+    print(f"  promo = {discount_code} ({discount_percent}% discount)")
+    print("=" * 40)
+
+    # 2. Pass query parameter values to template
+    return render_template(
+        "service.html",
+        selected_tier=selected_tier,
+        discount_code=discount_code,
+        discount_percent=discount_percent,
+    )
+
+
+@app.route("/study")
+def study():
+    return render_template("study.html")
+
 
 if __name__ == "__main__":
     app.run(debug=True) 

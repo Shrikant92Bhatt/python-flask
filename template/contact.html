@@ -3,6 +3,11 @@
 {% block title %}Contact Us | FlaskCraft{% endblock %}
 {% block meta_description %}Get in touch with the FlaskCraft team for inquiries, web development quotes, or technical support.{% endblock %}
 
+{% block extra_css %}
+<!-- Page-Specific Modular CSS: Contact Page -->
+<link rel="stylesheet" href="/static/css/contact.css">
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <!-- Hero Section -->
@@ -27,7 +32,7 @@
                 <div class="contact-item-content">
                     <h3>Email Address</h3>
                     <p id="contact-email-text">hello@flaskcraft.dev</p>
-                    <button type="button" class="copy-btn" id="btn-copy-email" style="margin-top: 0.5rem;" onclick="copyEmail()">Copy Email</button>
+                    <button type="button" class="copy-btn copy-btn-spaced" id="btn-copy-email" onclick="copyEmail()">Copy Email</button>
                 </div>
             </div>
 
@@ -44,13 +49,13 @@
                 <div class="contact-item-content">
                     <h3>Direct Phone</h3>
                     <p>+1 (555) 382-9014</p>
-                    <p style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.25rem;">Mon - Fri, 9:00 AM - 6:00 PM EST</p>
+                    <p class="contact-hours-text">Mon - Fri, 9:00 AM - 6:00 PM EST</p>
                 </div>
             </div>
 
-            <div class="glass-card" style="padding: 1.5rem; border-color: rgba(99, 102, 241, 0.2);">
-                <h4 style="font-size: 1rem; color: var(--text-main); margin-bottom: 0.5rem;">⚡ Response Time Guarantee</h4>
-                <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.6;">
+            <div class="glass-card contact-guarantee-card" id="contact-guarantee-card">
+                <h4 class="contact-guarantee-title">⚡ Response Time Guarantee</h4>
+                <p class="contact-guarantee-desc">
                     We review incoming messages continuously and aim to respond to all inquiries within 24 business hours.
                 </p>
             </div>
@@ -59,16 +64,16 @@
         <!-- Contact Form Panel -->
         <div class="contact-form-panel">
             {% if success and submission %}
-            <div id="form-status-alert" class="form-status" style="display: block;" role="alert">
+            <div id="form-status-alert" class="form-status form-status-visible" role="alert">
                 ✓ <strong>Message Received!</strong> Thank you for reaching out, {{ submission.name | title }}.
             </div>
 
             <!-- Dynamic Jinja Receipt Card -->
-            <div class="glass-card" style="margin-bottom: 2rem; border-color: rgba(16, 185, 129, 0.4); padding: 1.5rem;">
-                <h4 style="color: var(--accent-emerald); font-size: 1rem; margin-bottom: 0.75rem;">
+            <div class="glass-card contact-receipt-card" id="contact-receipt-card">
+                <h4 class="contact-receipt-title">
                     ✓ Submission Details (Rendered via Jinja)
                 </h4>
-                <div style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.4rem;">
+                <div class="contact-receipt-body">
                     <p><strong>Name:</strong> {{ submission.name | title }}</p>
                     <p><strong>Email:</strong> {{ submission.email }}</p>
                     <p><strong>Subject:</strong> {{ submission.subject | capitalize }}</p>
@@ -110,15 +115,15 @@
             </form>
 
             {% if submissions %}
-            <div class="glass-card" style="margin-top: 2rem; padding: 1.5rem;">
-                <h4 style="font-size: 1rem; color: var(--text-main); margin-bottom: 0.75rem;">
+            <div class="glass-card contact-recent-card" id="contact-recent-card">
+                <h4 class="contact-recent-title">
                     📋 Recent Inquiries ({{ submissions | length }})
                 </h4>
-                <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.85rem; color: var(--text-muted);">
+                <ul class="contact-recent-list">
                     {% for item in submissions %}
-                    <li style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
-                        <span style="color: var(--primary);">#{{ loop.index }}</span>
-                        <strong style="color: var(--text-main);">{{ item.name | title }}</strong>
+                    <li class="contact-recent-item">
+                        <span class="recent-index">#{{ loop.index }}</span>
+                        <strong class="recent-name">{{ item.name | title }}</strong>
                         ({{ item.email }}) —
                         <em>{{ item.subject }}</em>
                     </li>

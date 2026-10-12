@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In | FlaskCraft Authentication{% endblock %}
+{% block meta_description %}Demonstrating user authentication, session cookies, and flash toast messages in Flask.{% endblock %}
+
+{% block extra_css %}
+<!-- Page-Specific Modular CSS: Auth Page -->
+<link rel="stylesheet" href="/static/css/auth.css">
+{% endblock %}
+
+{% block content %}
+<div class="container auth-container" id="login-container">
+    <!-- Header -->
+    <div class="auth-header-group" id="auth-header-group">
+        <div class="tag-badge auth-tag-badge">
+            <span>🔐</span> Secure Access
+        </div>
+        <h1 class="hero-title auth-hero-title">
+            Account <span class="gradient-text">Sign In</span>
+        </h1>
+        <p class="hero-subtitle auth-hero-subtitle">
+            Experience Flask sessions & flash toasts with login and logout flows.
+        </p>
+    </div>
+
+    <!-- Login Card -->
+    <div class="glass-card auth-card" id="login-card">
+        <form action="{{ url_for('auth.login') }}" method="POST" id="login-form">
+            <div class="form-group">
+                <label for="username" class="form-label">Username</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    class="form-control" 
+                    placeholder="e.g. admin or shrikant" 
+                    value="{{ username if username else '' }}" 
+                    required 
+                    autocomplete="username"
+                >
+            </div>
+
+            <div class="form-group auth-password-group">
+                <label for="password" class="form-label">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-control" 
+                    placeholder="Enter password" 
+                    required 
+                    autocomplete="current-password"
+                >
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block auth-submit-btn" id="btn-submit-login">
+                <span>Sign In with Session</span>
+                <span>→</span>
+            </button>
+        </form>
+
+        <!-- Quick Demo Credentials Filler -->
+        <div class="auth-demo-section" id="auth-demo-section">
+            <div class="auth-demo-label">
+                ⚡ One-Click Demo Credentials:
+            </div>
+            <div class="auth-demo-btn-group" id="auth-demo-btn-group">
+                <button type="button" class="btn btn-secondary auth-demo-btn" id="btn-demo-admin" onclick="fillCredentials('admin', 'flask123')">
+                    admin / flask123
+                </button>
+                <button type="button" class="btn btn-secondary auth-demo-btn" id="btn-demo-shrikant" onclick="fillCredentials('shrikant', 'python123')">
+                    shrikant / python123
+                </button>
+                <button type="button" class="btn btn-secondary auth-demo-btn" id="btn-demo-developer" onclick="fillCredentials('developer', 'craft2026')">
+                    developer / craft2026
+                </button>
+            </div>
+        </div>
+
+        <!-- Educational Hint -->
+        <div class="auth-info-banner" id="auth-info-banner">
+            💡 <strong>How it works:</strong> On successful login, Python sets <code>session['user']</code> and executes <code>flash("Welcome back...", "success")</code>. Flask renders the message as a floating <strong>Toast notification</strong> on redirect!
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function fillCredentials(user, pass) {
+    document.getElementById('username').value = user;
+    document.getElementById('password').value = pass;
+}
+</script>
+{% endblock %}

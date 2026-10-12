@@ -1,0 +1,66 @@
+<!-- Floating Toast Notification System (Replaces inline alerts) -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true">
+        {% for category, message in messages %}
+        <div class="toast-card toast-{{ category }}" role="alert" id="toast-{{ loop.index }}">
+            <div class="toast-accent"></div>
+            <div class="toast-icon-wrapper">
+                {% if category == 'success' %}
+                    <span class="toast-icon">✓</span>
+                {% elif category == 'danger' or category == 'error' %}
+                    <span class="toast-icon">✕</span>
+                {% elif category == 'warning' %}
+                    <span class="toast-icon">⚠️</span>
+                {% else %}
+                    <span class="toast-icon">ℹ️</span>
+                {% endif %}
+            </div>
+            <div class="toast-content">
+                <div class="toast-header-row">
+                    <strong class="toast-title">
+                        {% if category == 'success' %}Success
+                        {% elif category == 'danger' or category == 'error' %}Authentication Error
+                        {% elif category == 'warning' %}Attention Needed
+                        {% else %}Notice
+                        {% endif %}
+                    </strong>
+                    <span class="toast-timestamp">Just now</span>
+                </div>
+                <div class="toast-message-text">{{ message }}</div>
+            </div>
+            <button type="button" class="toast-close-btn" aria-label="Close notification" onclick="dismissToast(this.closest('.toast-card'))">
+                ✕
+            </button>
+            <div class="toast-progress-bar"></div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Client-side Toast Controller: Auto-dismissal and smooth transitions -->
+    <script>
+    function dismissToast(toastEl) {
+        if (!toastEl) return;
+        toastEl.classList.add('toast-hiding');
+        setTimeout(() => {
+            toastEl.remove();
+            const container = document.getElementById('toast-container');
+            if (container && container.children.length === 0) {
+                container.remove();
+            }
+        }, 300);
+    }
+
+    // Auto-dismiss each toast after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        const toasts = document.querySelectorAll('.toast-card');
+        toasts.forEach((toast, index) => {
+            // Stagger auto-dismiss timer if multiple toasts exist
+            setTimeout(() => {
+                dismissToast(toast);
+            }, 5000 + (index * 800));
+        });
+    });
+    </script>
+    {% endif %}
+{% endwith %}

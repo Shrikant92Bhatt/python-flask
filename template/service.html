@@ -3,6 +3,11 @@
 {% block title %}Services | FlaskCraft{% endblock %}
 {% block meta_description %}Discover our full range of web development, Python API engineering, glassmorphic UI design, and performance optimization services.{% endblock %}
 
+{% block extra_css %}
+<!-- Page-Specific Modular CSS: Services Page -->
+<link rel="stylesheet" href="/static/css/service.css">
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <!-- Hero Section -->
@@ -74,23 +79,105 @@
     </section>
 
     <!-- Pricing / Engagement Tiers -->
-    <section aria-labelledby="pricing-title" style="margin-top: 5rem;">
-        <div style="text-align: center; margin-bottom: 3rem;">
+    <section class="pricing-section" id="pricing-section" aria-labelledby="pricing-title">
+        <div class="pricing-header-center" id="pricing-header-group">
             <div class="tag-badge"><span>💎</span> Transparent Plans</div>
-            <h2 class="hero-title" id="pricing-title" style="font-size: 2.5rem;">Flexible Engagement Options</h2>
-            <p class="hero-subtitle">Choose the perfect tier for your project requirements.</p>
+            <h2 class="hero-title pricing-title-lg" id="pricing-title">Flexible Engagement Options</h2>
+            <p class="hero-subtitle">Filter pricing tiers dynamically using URL query parameters.</p>
         </div>
 
-        <div class="pricing-grid">
+        <!-- Query Parameter Filter Buttons (Generated with url_for) -->
+        <div class="tier-filter-group" id="tier-filter-buttons">
+            <a href="{{ url_for('service', promo=discount_code if discount_code else None) }}" class="btn btn-filter-pill {% if selected_tier == 'all' %}btn-primary{% else %}btn-secondary{% endif %}" id="btn-filter-all">All Plans</a>
+            <a href="{{ url_for('service', tier='starter', promo=discount_code if discount_code else None) }}" class="btn btn-filter-pill {% if selected_tier == 'starter' %}btn-primary{% else %}btn-secondary{% endif %}" id="btn-filter-starter">Starter ($499)</a>
+            <a href="{{ url_for('service', tier='pro', promo=discount_code if discount_code else None) }}" class="btn btn-filter-pill {% if selected_tier == 'pro' %}btn-primary{% else %}btn-secondary{% endif %}" id="btn-filter-pro">Pro ($1,299)</a>
+            <a href="{{ url_for('service', tier='enterprise', promo=discount_code if discount_code else None) }}" class="btn btn-filter-pill {% if selected_tier == 'enterprise' %}btn-primary{% else %}btn-secondary{% endif %}" id="btn-filter-enterprise">Enterprise</a>
+        </div>
+
+        <!-- Promo Code Input Form (Pre-populated from Flask request.args.get) -->
+        <div class="glass-card promo-card" id="promo-code-card">
+            <div class="promo-header-row" id="promo-header-row">
+                <label for="promo-input" class="promo-label" id="promo-input-label">
+                    <span>🏷️</span> Apply Promo Code
+                </label>
+                {% if discount_code %}
+                <span class="promo-badge-prefilled" id="promo-prefilled-badge">
+                    Pre-populated Value
+                </span>
+                {% endif %}
+            </div>
+
+            <!-- GET form: Submits ?promo=<value> to the service route -->
+            <form method="GET" action="{{ url_for('service') }}" class="promo-form" id="promo-form">
+                {% if selected_tier != 'all' %}
+                <input type="hidden" name="tier" value="{{ selected_tier }}" id="hidden-tier-input">
+                {% endif %}
+
+                <div class="promo-input-wrapper">
+                    <input 
+                        type="text" 
+                        id="promo-input" 
+                        name="promo" 
+                        class="form-control promo-input" 
+                        value="{{ discount_code }}" 
+                        placeholder="Enter code (e.g. FLASK20)" 
+                        required
+                    >
+                </div>
+                <button type="submit" class="btn btn-primary btn-promo-apply" id="btn-promo-apply">
+                    Apply Code
+                </button>
+                {% if discount_code %}
+                <a href="{{ url_for('service', tier=selected_tier if selected_tier != 'all' else None) }}" class="btn btn-secondary btn-promo-reset" id="btn-promo-reset" title="Reset promo code">
+                    Reset
+                </a>
+                {% endif %}
+            </form>
+
+            <!-- Quick click samples -->
+            <div class="promo-pills-row" id="promo-sample-pills">
+                <span>Quick try:</span>
+                <a href="{{ url_for('service', tier=selected_tier if selected_tier != 'all' else None, promo='FLASK20') }}" class="promo-pill-btn" id="promo-sample-flask20">FLASK20 (20% off)</a>
+                <a href="{{ url_for('service', tier=selected_tier if selected_tier != 'all' else None, promo='SUMMER50') }}" class="promo-pill-btn" id="promo-sample-summer50">SUMMER50 (50% off)</a>
+                <a href="{{ url_for('service', tier=selected_tier if selected_tier != 'all' else None, promo='WELCOME10') }}" class="promo-pill-btn" id="promo-sample-welcome10">WELCOME10 (10% off)</a>
+            </div>
+
+            <!-- Explanatory note -->
+            <p class="promo-hint-note" id="promo-hint-note">
+                💡 <strong>Pre-population Mechanism:</strong> The input box uses <code>value="{{ '{{' }} discount_code {{ '}}' }}"</code> populated by Flask from <code>request.args.get("promo", default="FLASK20")</code>.
+            </p>
+        </div>
+
+        <!-- Promo Alert Banner -->
+        {% if discount_code %}
+        <div class="promo-alert-banner {% if discount_percent > 0 %}promo-alert-discount{% else %}promo-alert-neutral{% endif %}" id="promo-status-banner">
+            {% if discount_percent > 0 %}
+            <span>🎉 Promo Code <strong>{{ discount_code | upper }}</strong> applied! You get <strong>{{ discount_percent }}% OFF</strong> all service packages.</span>
+            {% else %}
+            <span>ℹ️ Promo Code <strong>{{ discount_code | upper }}</strong> entered.</span>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="pricing-grid" id="pricing-grid">
             <!-- Tier 1 -->
+            {% if selected_tier in ['all', 'starter'] %}
             <article class="pricing-card" id="pricing-starter">
                 <div>
                     <div class="pricing-header">
                         <h3 class="pricing-name">Starter Website</h3>
+                        {% if discount_percent > 0 %}
+                        <div class="pricing-price">
+                            <span class="price-strikethrough">$499</span>
+                            <span class="price-discounted">${{ (499 * (100 - discount_percent) / 100) | int }}</span>
+                            <span class="pricing-period">/ flat ({{ discount_percent }}% OFF)</span>
+                        </div>
+                        {% else %}
                         <div class="pricing-price">
                             <span>$499</span>
                             <span class="pricing-period">/ flat</span>
                         </div>
+                        {% endif %}
                         <p class="pricing-desc">Perfect for small businesses & personal portfolios needing a sleek web presence.</p>
                     </div>
 
@@ -101,19 +188,29 @@
                         <li><span class="icon">✓</span> Fast deployment setup</li>
                     </ul>
                 </div>
-                <a href="{{ url_for('contact') }}" class="btn btn-secondary btn-block">Choose Starter</a>
+                <a href="{{ url_for('contact') }}" class="btn btn-secondary btn-block" id="btn-choose-starter">Choose Starter</a>
             </article>
+            {% endif %}
 
             <!-- Tier 2 (Featured) -->
+            {% if selected_tier in ['all', 'pro'] %}
             <article class="pricing-card featured" id="pricing-pro">
                 <span class="pricing-badge">Most Popular</span>
                 <div>
                     <div class="pricing-header">
                         <h3 class="pricing-name">Full Application</h3>
+                        {% if discount_percent > 0 %}
+                        <div class="pricing-price">
+                            <span class="price-strikethrough">$1,299</span>
+                            <span class="price-discounted">${{ (1299 * (100 - discount_percent) / 100) | int }}</span>
+                            <span class="pricing-period">/ flat ({{ discount_percent }}% OFF)</span>
+                        </div>
+                        {% else %}
                         <div class="pricing-price">
                             <span>$1,299</span>
                             <span class="pricing-period">/ flat</span>
                         </div>
+                        {% endif %}
                         <p class="pricing-desc">Comprehensive Flask web app with dynamic routes, API integrations, and database backing.</p>
                     </div>
 
@@ -125,16 +222,21 @@
                         <li><span class="icon">✓</span> Priority email support</li>
                     </ul>
                 </div>
-                <a href="{{ url_for('contact') }}" class="btn btn-primary btn-block">Choose Pro</a>
+                <a href="{{ url_for('contact') }}" class="btn btn-primary btn-block" id="btn-choose-pro">Choose Pro</a>
             </article>
+            {% endif %}
 
             <!-- Tier 3 -->
+            {% if selected_tier in ['all', 'enterprise'] %}
             <article class="pricing-card" id="pricing-enterprise">
                 <div>
                     <div class="pricing-header">
                         <h3 class="pricing-name">Custom Enterprise</h3>
                         <div class="pricing-price">
                             <span>Custom</span>
+                            {% if discount_percent > 0 %}
+                            <span class="pricing-period">({{ discount_percent }}% credit applied)</span>
+                            {% endif %}
                         </div>
                         <p class="pricing-desc">Bespoke software architecture, microservices, and dedicated cloud deployments.</p>
                     </div>
@@ -146,8 +248,51 @@
                         <li><span class="icon">✓</span> 24/7 SLA maintenance</li>
                     </ul>
                 </div>
-                <a href="{{ url_for('contact') }}" class="btn btn-secondary btn-block">Contact Sales</a>
+                <a href="{{ url_for('contact') }}" class="btn btn-secondary btn-block" id="btn-choose-enterprise">Contact Sales</a>
             </article>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Query Parameters Explanation Card -->
+    <section class="code-preview-card query-params-guide" id="query-params-guide" aria-label="Query Parameters Architecture">
+        <div class="code-header">
+            <div class="window-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <span class="file-name">How URL Query Parameters Work in Flask</span>
+            <span class="copy-btn">Flask request.args</span>
+        </div>
+        <div class="query-params-body">
+            <p class="query-params-heading">
+                Query Parameters (GET parameters) explained:
+            </p>
+            <ol class="query-params-list">
+                <li>
+                    <strong class="step-title-cyan">1. In the URL:</strong>
+                    Parameters are appended after a question mark: <code>/service?tier=pro&amp;promo=save20</code>
+                </li>
+                <li>
+                    <strong class="step-title-primary">2. Reading in Python (main.py):</strong>
+                    Flask provides the <code>request.args</code> dictionary:
+                    <pre class="query-params-code"><code>tier = request.args.get("tier", default="all")
+promo = request.args.get("promo", default=None)</code></pre>
+                </li>
+                <li>
+                    <strong class="step-title-emerald">3. Generating in Templates (url_for):</strong>
+                    Pass extra arguments to <code>url_for()</code> and Flask automatically converts them into query strings:
+                    <pre class="query-params-code"><code>&lt;a href="{{ '{{' }} url_for('service', tier='pro', promo=discount_code) {{ '}}' }}"&gt;Pro Plan&lt;/a&gt;
+&lt;!-- Outputs: /service?tier=pro&amp;promo=FLASK20 --&gt;</code></pre>
+                </li>
+                <li>
+                    <strong class="step-title-amber">4. Pre-populating Form Input Boxes:</strong>
+                    Pass the query value into the template and bind it directly to the input's <code>value</code> attribute:
+                    <pre class="query-params-code"><code>&lt;input type="text" name="promo" value="{{ '{{' }} discount_code {{ '}}' }}"&gt;
+&lt;!-- When page loads without query params, default 'FLASK20' is pre-filled --&gt;</code></pre>
+                </li>
+            </ol>
         </div>
     </section>
 

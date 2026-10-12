@@ -2,7 +2,7 @@
 <header class="site-header">
     <div class="container nav-container">
         <a href="{{ url_for('home') }}" class="brand-logo" id="nav-brand">
-            <span class="logo-badge">⚡</span>
+            <img src="/static/images/favicon.svg" alt="FlaskCraft Icon" width="36" height="36" class="nav-logo-icon" id="nav-logo-icon">
             <span>FlaskCraft</span>
         </a>
 
@@ -20,15 +20,25 @@
                 <li>
                     <a href="{{ url_for('contact') }}" class="nav-link {% if request.path == '/contact' %}active{% endif %}" id="nav-link-contact">Contact</a>
                 </li>
+                <li>
+                    <a href="{{ url_for('flash_demo.flash_page') }}" class="nav-link {% if request.path == '/flash-demo' %}active{% endif %}" id="nav-link-flash">Flash Demo</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('study') }}" class="nav-link {% if request.path == '/study' %}active{% endif %}" id="nav-link-study">Study Guide</a>
+                </li>
             </ul>
         </nav>
 
-        <div class="nav-actions">
-            <div class="status-indicator" id="server-status">
-                <span class="pulse-dot"></span>
-                <span>Flask Ready</span>
-            </div>
-            <a href="{{ url_for('contact') }}" class="btn btn-primary" id="nav-cta-contact">Get in Touch</a>
+        <div class="nav-actions nav-actions-group" id="nav-actions-group">
+            {% if session.user %}
+            <a href="{{ url_for('auth.dashboard') }}" class="nav-profile-badge" id="nav-user-profile" title="View Dashboard">
+                <span>👤</span> {{ session.user | title }}
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary nav-btn-compact" id="nav-btn-logout">Logout</a>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary nav-btn-signin" id="nav-btn-login">Sign In</a>
+            <a href="{{ url_for('contact') }}" class="btn btn-primary nav-btn-contact" id="nav-cta-contact">Get in Touch</a>
+            {% endif %}
         </div>
     </div>
 </header>

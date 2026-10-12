@@ -1,0 +1,600 @@
+{% extends "base.html" %}
+
+{% block title %}Flask Comprehensive Study Guide | FlaskCraft{% endblock %}
+{% block meta_description %}In-depth study guide of all Flask concepts learned: routing, Jinja2 loops, conditionals, inheritance, query params, APIs with jsonify, and flash messages.{% endblock %}
+
+{% block extra_css %}
+<!-- Page-Specific Modular CSS: Study Guide Page -->
+<link rel="stylesheet" href="/static/css/study.css">
+{% endblock %}
+
+{% block content %}
+<div class="container study-container" id="study-container">
+    <!-- Hero Section -->
+    <section class="hero-section" aria-labelledby="study-title">
+        <div class="tag-badge">
+            <span>📚</span> Complete Learning Reference
+        </div>
+        <h1 class="hero-title" id="study-title">
+            Flask & Jinja <span class="gradient-text">Study Guide</span>
+        </h1>
+        <p class="hero-subtitle">
+            An interactive, comprehensive breakdown of every core concept covered in this project with exact codebase file references and code examples.
+        </p>
+    </section>
+
+    <!-- Interactive Search & Filter Controls -->
+    <section class="study-controls-section" id="study-controls-section">
+        <div class="glass-card study-controls-card" id="study-controls-card">
+            <div class="study-controls-info">
+                <input 
+                    type="text" 
+                    id="study-search-input" 
+                    class="form-control study-controls-sub" 
+                    placeholder="🔍 Search concepts (e.g. loops, jsonify, flash, query, inheritance)..."
+                    onkeyup="filterAccordions()"
+                >
+            </div>
+            <div class="study-controls-actions">
+                <button type="button" class="btn btn-secondary study-control-btn" id="btn-study-expand-all" onclick="toggleAllAccordions(true)">
+                    Expand All ▾
+                </button>
+                <button type="button" class="btn btn-secondary study-control-btn" id="btn-study-collapse-all" onclick="toggleAllAccordions(false)">
+                    Collapse All ▴
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Accordion Study Topics -->
+    <section aria-label="Flask Concepts Accordion" class="study-accordion-list" id="study-accordion-list">
+
+        <!-- 1. Flask App Initialization & WSGI Server -->
+        <details class="study-accordion" id="topic-init" open>
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">01</span>
+                    <span class="topic-title">Flask Application Setup & WSGI Server</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">main.py</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <p><strong>Concept:</strong> Flask initializes an application object that acts as the central WSGI application. Setting <code>template_folder</code> customizes the Jinja templates directory, and <code>app.secret_key</code> enables secure session cookies required for flash messages.</p>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>main.py</span>
+                    </div>
+                    <pre><code>from flask import Flask, render_template, request
+
+# Create application instance with custom template folder
+app = Flask(__name__, template_folder="template")
+app.secret_key = "flaskcraft-dev-secret-key-2026"
+
+if __name__ == "__main__":
+    # debug=True enables live auto-reloading and browser debugger
+    app.run(debug=True)</code></pre>
+                </div>
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py">main.py</a>
+                </div>
+            </div>
+        </details>
+
+        <!-- 2. Basic URL Routing & View Functions -->
+        <details class="study-accordion" id="topic-routing">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">02</span>
+                    <span class="topic-title">URL Routing & View Functions</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">main.py</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <p><strong>Concept:</strong> Routes map specific URL paths to Python functions using the <code>@app.route()</code> decorator. The return value is sent to the client as an HTTP response.</p>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>main.py</span>
+                    </div>
+                    <pre><code>@app.route("/")
+def home():
+    return render_template("home.html")
+
+@app.route("/about")
+def about():
+    return render_template("about.html", company_name="FlaskCraft")</code></pre>
+                </div>
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py">main.py</a>
+                </div>
+            </div>
+        </details>
+
+        <!-- 3. HTTP Methods (GET & POST) -->
+        <details class="study-accordion" id="topic-http-methods">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">03</span>
+                    <span class="topic-title">HTTP Methods Handling (GET & POST)</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">main.py & contact.html</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <p><strong>Concept:</strong> By default, routes only accept <code>GET</code>. Adding <code>methods=["GET", "POST"]</code> allows a single route to both render a form and process its incoming submission.</p>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>main.py (Contact route)</span>
+                    </div>
+                    <pre><code>@app.route("/contact", methods=["GET", "POST"])
+def contact():
+    if request.method == "POST":
+        # Process form submission
+        name = request.form.get("name")
+        return render_template("contact.html", success=True, name=name)
+    
+    # Handle normal page visit
+    return render_template("contact.html")</code></pre>
+                </div>
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py">main.py</a> and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/contact.html">template/contact.html</a>
+                </div>
+            </div>
+        </details>
+
+        <!-- 4. Query Parameters (request.args) -->
+        <details class="study-accordion" id="topic-query-params">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">04</span>
+                    <span class="topic-title">URL Query Parameters (request.args.get)</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">main.py & service.html</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <p><strong>Concept:</strong> Query parameters are appended to the URL after a <code>?</code> (e.g. <code>/service?tier=pro&promo=FLASK20</code>). Flask parses them into the <code>request.args</code> dictionary. Use <code>request.args.get(key, default)</code> to safely read them with default fallbacks.</p>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>main.py (Service route)</span>
+                    </div>
+                    <pre><code>@app.route("/service")
+def service():
+    # Read query parameters with fallbacks
+    selected_tier = request.args.get("tier", default="all")
+    discount_code = request.args.get("promo", default="FLASK20").strip()
+    
+    return render_template(
+        "service.html",
+        selected_tier=selected_tier,
+        discount_code=discount_code
+    )</code></pre>
+                </div>
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py">main.py</a> and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/service.html">template/service.html</a>
+                </div>
+            </div>
+        </details>
+
+        <!-- 5. Pre-populating HTML Form Inputs -->
+        <details class="study-accordion" id="topic-prepopulating">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">05</span>
+                    <span class="topic-title">Pre-populating Form Inputs via Jinja</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">service.html</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <p><strong>Concept:</strong> To provide default or preserved form values, pass the variable from Flask to Jinja and bind it directly to the HTML <code>input</code> element's <code>value</code> attribute.</p>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>template/service.html</span>
+                    </div>
+                    {% raw %}
+                    <pre><code>&lt;form method="GET" action="{{ url_for('service') }}"&gt;
+    &lt;input 
+        type="text" 
+        name="promo" 
+        value="{{ discount_code }}" 
+        placeholder="Enter promo code"
+    &gt;
+    &lt;button type="submit"&gt;Apply Code&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+                    {% endraw %}
+                </div>
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/service.html">template/service.html</a>
+                </div>
+            </div>
+        </details>
+
+        <!-- 6. Jinja2 Loops & Loop Metadata -->
+        <details class="study-accordion" id="topic-loops">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">06</span>
+                    <span class="topic-title">Jinja2 Loops & Loop Helpers (loop.index)</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">about.html & contact.html</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <p><strong>Concept:</strong> Iterate over lists and dictionaries using loop blocks. Jinja provides the special <code>loop</code> object with helpers like <code>loop.index</code> (1-based), <code>loop.index0</code> (0-based), <code>loop.first</code>, and <code>loop.last</code>.</p>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>template/about.html</span>
+                    </div>
+                    {% raw %}
+                    <pre><code>{% for member in team %}
+    &lt;div class="member-card"&gt;
+        &lt;span&gt;#{{ loop.index }}&lt;/span&gt;
+        &lt;h3&gt;{{ member.name }}&lt;/h3&gt;
+        &lt;p&gt;{{ member.role }} ({{ member.experience }} yrs)&lt;/p&gt;
+    &lt;/div&gt;
+{% endfor %}</code></pre>
+                    {% endraw %}
+                </div>
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/about.html">template/about.html</a> and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/contact.html">template/contact.html</a>
+                </div>
+            </div>
+        </details>
+
+        <!-- 7. Jinja2 Conditionals & Logic -->
+        <details class="study-accordion" id="topic-conditionals">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">07</span>
+                    <span class="topic-title">Jinja2 Conditionals (if, elif, else)</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">about.html & service.html</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <p><strong>Concept:</strong> Conditionally render HTML blocks based on boolean flags, values, or membership expressions (<code>in</code>).</p>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>template/about.html & template/service.html</span>
+                    </div>
+                    {% raw %}
+                    <pre><code>{% if is_hiring %}
+    &lt;span class="badge-open"&gt;We are actively hiring!&lt;/span&gt;
+{% else %}
+    &lt;span class="badge-closed"&gt;Positions filled&lt;/span&gt;
+{% endif %}
+
+{% if selected_tier in ['all', 'starter'] %}
+    &lt;article class="pricing-card"&gt;...&lt;/article&gt;
+{% endif %}</code></pre>
+                    {% endraw %}
+                </div>
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/about.html">template/about.html</a> and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/service.html">template/service.html</a>
+                </div>
+            </div>
+        </details>
+
+        <!-- 8. Template Inheritance -->
+        <details class="study-accordion" id="topic-inheritance">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">08</span>
+                    <span class="topic-title">Template Inheritance (extends & block)</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">base.html & all child pages</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <p><strong>Concept:</strong> Define a master layout in <code>base.html</code> with common tags (head, meta, scripts, header, footer) and inject page-specific content into predefined blocks using <code>extends</code>.</p>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>template/base.html vs template/home.html</span>
+                    </div>
+                    {% raw %}
+                    <pre><code>&lt;!-- In base.html --&gt;
+&lt;main&gt;
+    {% block content %}{% endblock %}
+&lt;/main&gt;
+
+&lt;!-- In home.html --&gt;
+{% extends "base.html" %}
+{% block title %}Home | FlaskCraft{% endblock %}
+{% block content %}
+    &lt;h1&gt;Welcome to Home Page&lt;/h1&gt;
+{% endblock %}</code></pre>
+                    {% endraw %}
+                </div>
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/base.html">template/base.html</a> and all page templates
+                </div>
+            </div>
+        </details>
+
+        <!-- 9. Modular Template Partials (Components) -->
+        <details class="study-accordion" id="topic-partials">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">09</span>
+                    <span class="topic-title">Modular Partials & Components (include)</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">components/</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <p><strong>Concept:</strong> Extract reusable snippets (e.g. Navbar, Footer, Flash alerts) into separate files under <code>template/components/</code> and embed them cleanly using <code>include</code>.</p>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>template/base.html</span>
+                    </div>
+                    {% raw %}
+                    <pre><code>{% include 'components/navbar.html' %}
+{% include 'components/flash_messages.html' %}
+
+&lt;main&gt;
+    {% block content %}{% endblock %}
+&lt;/main&gt;
+
+{% include 'components/footer.html' %}</code></pre>
+                    {% endraw %}
+                </div>
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/components/navbar.html">navbar.html</a>, <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/components/footer.html">footer.html</a>, and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/components/flash_messages.html">flash_messages.html</a>
+                </div>
+            </div>
+        </details>
+
+        <!-- 10. Static Assets & url_for -->
+        <details class="study-accordion" id="topic-static">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">10</span>
+                    <span class="topic-title">Static Assets Management (url_for vs Direct Path)</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">static/ & base.html</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <p><strong>Concept:</strong> Static assets (CSS, JS, images, SVG) are stored in the <code>static/</code> directory. They can be linked using Flask's dynamic resolver <code>url_for('static', filename='...')</code> or via direct URLs like <code>/static/...</code>.</p>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>template/base.html</span>
+                    </div>
+                    {% raw %}
+                    <pre><code>&lt;!-- Option 1 (Dynamic url_for helper - recommended for caching & routing): --&gt;
+&lt;link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"&gt;
+
+&lt;!-- Option 2 (Direct path from root): --&gt;
+&lt;link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg"&gt;
+&lt;script src="/static/js/main.js"&gt;&lt;/script&gt;</code></pre>
+                    {% endraw %}
+                </div>
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/base.html">template/base.html</a> and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/static/css/style.css">static/css/style.css</a>
+                </div>
+            </div>
+        </details>
+
+        <!-- 11. Dynamic URL Building (url_for) -->
+        <details class="study-accordion" id="topic-urlfor">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">11</span>
+                    <span class="topic-title">Dynamic URL Generation with url_for()</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">navbar.html & service.html</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <p><strong>Concept:</strong> Always use <code>url_for('endpoint_name')</code> instead of hardcoding raw URLs. Any extra keyword arguments are automatically serialized into query parameters.</p>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>url_for Examples</span>
+                    </div>
+                    {% raw %}
+                    <pre><code>&lt;!-- Basic route URL: --&gt;
+&lt;a href="{{ url_for('home') }}"&gt;Home&lt;/a&gt;
+
+&lt;!-- Route with Query Parameters: --&gt;
+&lt;a href="{{ url_for('service', tier='pro', promo='FLASK20') }}"&gt;Pro Plan&lt;/a&gt;
+&lt;!-- Produces: /service?tier=pro&promo=FLASK20 --&gt;
+
+&lt;!-- Blueprint Route URL: --&gt;
+&lt;a href="{{ url_for('flash_demo.flash_page') }}"&gt;Flash Demo&lt;/a&gt;</code></pre>
+                    {% endraw %}
+                </div>
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/components/navbar.html">navbar.html</a> and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/service.html">service.html</a>
+                </div>
+            </div>
+        </details>
+
+        <!-- 12. Modular Blueprints -->
+        <details class="study-accordion" id="topic-blueprints">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">12</span>
+                    <span class="topic-title">Modular Architecture with Flask Blueprints</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">api.py & flash_demo.py</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <p><strong>Concept:</strong> Blueprints allow splitting large applications into independent modules or files, each with their own routes, URL prefixes, and logic. Register them into the central app with <code>app.register_blueprint()</code>.</p>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>api.py & main.py</span>
+                    </div>
+                    <pre><code># In api.py:
+from flask import Blueprint, jsonify
+api_bp = Blueprint("api", __name__, url_prefix="/api")
+
+# In main.py:
+from api import api_bp
+from flash_demo import flash_bp
+
+app.register_blueprint(api_bp)
+app.register_blueprint(flash_bp)</code></pre>
+                </div>
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/api.py">api.py</a> and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/flash_demo.py">flash_demo.py</a>
+                </div>
+            </div>
+        </details>
+
+        <!-- 13. REST APIs with jsonify -->
+        <details class="study-accordion" id="topic-jsonify">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">13</span>
+                    <span class="topic-title">REST APIs & JSON Responses with jsonify</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">api.py</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <p><strong>Concept:</strong> Flask's <code>jsonify()</code> serializes Python dictionaries/lists into JSON strings, sets the <code>Content-Type: application/json</code> header, and pairs with appropriate HTTP status codes (<code>200</code>, <code>201</code>, <code>400</code>, <code>404</code>). Use <code>request.get_json()</code> to parse incoming JSON bodies.</p>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>api.py (Endpoints & Responses)</span>
+                    </div>
+                    <pre><code>from flask import Blueprint, jsonify, request
+
+api_bp = Blueprint("api", __name__, url_prefix="/api")
+
+# 1. GET returning JSON data
+@api_bp.route("/services", methods=["GET"])
+def get_services():
+    return jsonify({"success": True, "count": 3, "data": [...]}), 200
+
+# 2. POST accepting JSON body
+@api_bp.route("/inquiries", methods=["POST"])
+def create_inquiry():
+    data = request.get_json()
+    if not data or "name" not in data:
+        return jsonify({"success": False, "error": "Invalid JSON"}), 400
+    return jsonify({"success": True, "data": data}), 201</code></pre>
+                </div>
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/api.py">api.py</a>
+                    <div class="study-quick-links">
+                        <a href="/api/health" target="_blank" class="btn btn-secondary study-quick-btn">Try /api/health →</a>
+                        <a href="/api/services" target="_blank" class="btn btn-secondary study-quick-btn">Try /api/services →</a>
+                        <a href="/api/promo/validate?code=FLASK20" target="_blank" class="btn btn-secondary study-quick-btn">Try /api/promo/validate →</a>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <!-- 14. Flash Messages -->
+        <details class="study-accordion" id="topic-flash">
+            <summary class="accordion-summary">
+                <div class="summary-left">
+                    <span class="topic-num">14</span>
+                    <span class="topic-title">Flask Flash Messages, Login & Logout Flow, and Floating Toasts</span>
+                </div>
+                <div class="summary-right">
+                    <span class="badge-tag">auth.py & toast.html</span>
+                    <span class="accordion-arrow">▾</span>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <p><strong>Concept:</strong> Flash messages store temporary feedback notifications in user session cookies. When paired with authentication (<strong>Login</strong>, <strong>Logout</strong>, and protected routes), messages are displayed once on the next page via a floating <strong>Toast notification component</strong> with auto-dismiss timers instead of static page banners.</p>
+                <div class="code-block-wrapper">
+                    <div class="code-header-bar">
+                        <span>auth.py & template/components/toast.html</span>
+                    </div>
+                    {% raw %}
+                    <pre><code># 1. Login flow in auth.py:
+@auth_bp.route("/login", methods=["POST"])
+def login():
+    if check_credentials(username, password):
+        session["user"] = username
+        flash(f"Welcome back, {username}! You have successfully logged in.", "success")
+        return redirect(url_for("home"))
+    flash("Invalid credentials! Please try again.", "danger")
+    return render_template("login.html")
+
+# 2. Rendered as Floating Toasts in toast.html:
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="toast-container" id="toast-container">
+        {% for category, message in messages %}
+        <div class="toast-card toast-{{ category }}">
+            <span class="toast-icon">✓</span>
+            <div class="toast-content">{{ message }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endwith %}</code></pre>
+                    {% endraw %}
+                </div>
+                <div class="file-reference-box">
+                    <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/auth.py">auth.py</a>, <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/login.html">login.html</a>, and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/components/toast.html">components/toast.html</a>
+                    <div class="study-quick-links">
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary study-quick-btn">Try Login Page & Toast →</a>
+                        <a href="{{ url_for('flash_demo.flash_page') }}" class="btn btn-secondary study-quick-btn">Open Flash Demo Playground →</a>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterAccordions() {
+    const input = document.getElementById('study-search-input').value.toLowerCase();
+    const accordions = document.querySelectorAll('.study-accordion');
+    
+    accordions.forEach(acc => {
+        const text = acc.innerText.toLowerCase();
+        if (text.includes(input)) {
+            acc.style.display = 'block';
+            if (input.length > 2) {
+                acc.open = true;
+            }
+        } else {
+            acc.style.display = 'none';
+        }
+    });
+}
+
+function toggleAllAccordions(shouldOpen) {
+    document.querySelectorAll('.study-accordion').forEach(acc => {
+        acc.open = shouldOpen;
+    });
+}
+</script>
+{% endblock %}

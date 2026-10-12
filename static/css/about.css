@@ -1,0 +1,225 @@
+/* ==========================================================================
+   FlaskCraft - About Page Stylesheet
+   Includes: Metrics, Milestones Timeline, Team Members, Inheritance Card
+   ========================================================================== */
+
+/* ==========================================================================
+   About Page Specific Styles
+   ========================================================================== */
+.two-col-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  margin: 3.5rem 0;
+  align-items: start;
+}
+
+.story-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.story-badge {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary);
+}
+
+/* Timeline */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  left: 7px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.timeline-item {
+  position: relative;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -2rem;
+  top: 0.25rem;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--bg-dark);
+  border: 3px solid var(--primary);
+  box-shadow: 0 0 10px var(--primary-glow);
+}
+
+.timeline-year {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  margin-bottom: 0.25rem;
+}
+
+.timeline-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+  color: var(--text-main);
+}
+
+.timeline-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+
+/* ==========================================================================
+   About Page Semantic Refinements
+   ========================================================================== */
+.timeline-heading {
+  margin-bottom: 2rem;
+}
+
+.timeline-status-completed {
+  color: var(--accent-emerald);
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+  font-weight: 600;
+}
+
+.timeline-status-progress {
+  color: var(--accent-amber);
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+  font-weight: 600;
+}
+
+.team-section {
+  margin: 4.5rem 0;
+}
+
+.team-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.team-title {
+  font-size: 2.4rem;
+}
+
+.hiring-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1.25rem;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: var(--radius-full);
+  color: var(--accent-emerald);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.member-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.member-icon {
+  margin-bottom: 0;
+}
+
+.member-lead-badge {
+  background: rgba(99, 102, 241, 0.2);
+  border: 1px solid var(--primary);
+  color: #a5b4fc;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+}
+
+.member-role-text {
+  color: var(--accent-cyan);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.member-seniority-p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.seniority-senior {
+  color: var(--accent-emerald);
+  font-weight: 600;
+}
+
+.seniority-mid {
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.seniority-associate {
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.member-count-note {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin-top: 0.75rem;
+}
+
+.inheritance-guide-section {
+  margin: 4.5rem 0;
+}
+
+.inheritance-guide-body {
+  padding: 2rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
+
+.inheritance-guide-heading {
+  margin-bottom: 1.25rem;
+}
+
+.inheritance-guide-title {
+  color: var(--text-main);
+  font-size: 1.05rem;
+}
+
+.inheritance-guide-list {
+  margin-left: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.inheritance-badge {
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid var(--primary);
+  color: #a5b4fc;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard | FlaskCraft{% endblock %}
+{% block meta_description %}Protected user dashboard displaying active session state and authentication details.{% endblock %}
+
+{% block extra_css %}
+<!-- Page-Specific Modular CSS: Dashboard Page -->
+<link rel="stylesheet" href="/static/css/auth.css">
+{% endblock %}
+
+{% block content %}
+<div class="container dash-container" id="dash-container">
+    <!-- Hero Section -->
+    <section class="hero-section" aria-labelledby="dash-title">
+        <div class="tag-badge">
+            <span>🛡️</span> Protected Session
+        </div>
+        <h1 class="hero-title" id="dash-title">
+            Welcome, <span class="gradient-text">{{ user | title }}</span>!
+        </h1>
+        <p class="hero-subtitle">
+            You are currently authenticated via an encrypted Flask session cookie.
+        </p>
+    </section>
+
+    <!-- Account Details Card -->
+    <div class="glass-card dash-card" id="dash-card">
+        <div class="dash-header-row" id="dash-header-row">
+            <div>
+                <h2 class="card-title">
+                    Active Session Status
+                </h2>
+                <p class="card-desc">Stored securely in client-side signed cookie</p>
+            </div>
+            <span class="dash-status-badge" id="dash-status-badge">
+                ● Authenticated
+            </span>
+        </div>
+
+        <div class="dash-stat-grid" id="dash-stat-grid">
+            <div class="dash-stat-box" id="stat-username">
+                <div class="dash-stat-label">Username</div>
+                <div class="dash-stat-value">{{ user }}</div>
+            </div>
+            <div class="dash-stat-box" id="stat-session-key">
+                <div class="dash-stat-label">Session Key</div>
+                <div class="dash-stat-value cyan-mono">session['user']</div>
+            </div>
+            <div class="dash-stat-box" id="stat-role">
+                <div class="dash-stat-label">Role</div>
+                <div class="dash-stat-value amber">Administrator</div>
+            </div>
+        </div>
+
+        <div class="dash-actions-row" id="dash-actions-row">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary" id="btn-dash-logout">
+                Log Out of Account ✕
+            </a>
+            <a href="{{ url_for('home') }}" class="btn btn-primary" id="btn-dash-home">
+                Return to Home →
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

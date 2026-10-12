@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Flask Flash Messages Demo | FlaskCraft{% endblock %}
+{% block meta_description %}Interactive demonstration of Flask flash messages, categories, session storage, and Post/Redirect/Get pattern.{% endblock %}
+
+{% block extra_css %}
+<!-- Page-Specific Modular CSS: Flash Messages Page -->
+<link rel="stylesheet" href="/static/css/flash.css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="hero-section" aria-labelledby="flash-title">
+        <div class="tag-badge">
+            <span>⚡</span> Temporary Notifications
+        </div>
+        <h1 class="hero-title" id="flash-title">
+            Flask <span class="gradient-text">Flash Messages</span>
+        </h1>
+        <p class="hero-subtitle">
+            Flash messages provide a way to send one-time notifications from Python to the client that survive an HTTP redirect and disappear after being read.
+        </p>
+    </section>
+
+    <!-- Quick Trigger Buttons Section -->
+    <section class="flash-trigger-section" id="flash-trigger-section">
+        <div class="glass-card flash-card" id="flash-card">
+            <div class="flash-card-header" id="flash-card-header">
+                <h2 class="flash-section-title">
+                    🚀 Quick One-Click Triggers
+                </h2>
+                <p class="flash-section-desc">
+                    Click any button to trigger an HTTP redirect that queues a flashed message into the session cookie:
+                </p>
+            </div>
+
+            <div class="flash-trigger-buttons" id="flash-trigger-buttons">
+                <a href="{{ url_for('flash_demo.quick_flash', category='success') }}" class="btn flash-btn-success" id="btn-flash-success">
+                    ✓ Trigger Success
+                </a>
+                <a href="{{ url_for('flash_demo.quick_flash', category='warning') }}" class="btn flash-btn-warning" id="btn-flash-warning">
+                    ⚠️ Trigger Warning
+                </a>
+                <a href="{{ url_for('flash_demo.quick_flash', category='danger') }}" class="btn flash-btn-danger" id="btn-flash-danger">
+                    ✕ Trigger Error (Danger)
+                </a>
+                <a href="{{ url_for('flash_demo.quick_flash', category='info') }}" class="btn flash-btn-info" id="btn-flash-info">
+                    ℹ️ Trigger Info
+                </a>
+            </div>
+
+            <!-- Custom Message Form -->
+            <div class="flash-custom-wrapper" id="flash-custom-wrapper">
+                <h3 class="flash-custom-title">
+                    ✍️ Create a Custom Flash Notification
+                </h3>
+                <form action="{{ url_for('flash_demo.trigger_flash') }}" method="POST" class="flash-custom-form" id="flash-custom-form">
+                    <div class="flash-form-grid">
+                        <div class="form-group flash-form-group-compact">
+                            <label for="custom-msg" class="form-label">Message Content</label>
+                            <input 
+                                type="text" 
+                                id="custom-msg" 
+                                name="message" 
+                                class="form-control" 
+                                placeholder="e.g. Profile updated successfully!"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group flash-form-group-compact">
+                            <label for="custom-category" class="form-label">Category (Style)</label>
+                            <select id="custom-category" name="category" class="form-control">
+                                <option value="success">Success (Green)</option>
+                                <option value="warning">Warning (Amber)</option>
+                                <option value="danger">Danger / Error (Red)</option>
+                                <option value="info" selected>Info (Cyan)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary flash-submit-btn" id="btn-flash-custom-submit">
+                        Flash Message & Redirect →
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture & Code Breakdown Card -->
+    <section class="code-preview-card flash-guide-card" id="flash-guide-card" aria-label="Flash Message Technical Architecture">
+        <div class="code-header">
+            <div class="window-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <span class="file-name">How Flask Flash Messages Work (Step-by-Step)</span>
+            <span class="copy-btn">flask_demo.py</span>
+        </div>
+        <div class="flash-guide-body">
+            <div class="flash-guide-grid">
+                <div class="glass-card flash-guide-step" id="flash-step-1">
+                    <h4 class="step-title-cyan">1. Set Secret Key (Mandatory)</h4>
+                    <p class="step-desc">
+                        Flash messages require an encrypted session cookie:
+                    </p>
+                    <pre class="step-code"><code>app.secret_key = "secret-key"</code></pre>
+                </div>
+
+                <div class="glass-card flash-guide-step" id="flash-step-2">
+                    <h4 class="step-title-primary">2. Flash in Route (Python)</h4>
+                    <p class="step-desc">
+                        Call <code>flash(message, category)</code> and redirect:
+                    </p>
+                    <pre class="step-code"><code>flash("Saved!", "success")
+return redirect(url_for("home"))</code></pre>
+                </div>
+
+                <div class="glass-card flash-guide-step" id="flash-step-3">
+                    <h4 class="step-title-emerald">3. Render in Template (Jinja)</h4>
+                    <p class="step-desc">
+                        Access via <code>get_flashed_messages()</code>:
+                    </p>
+                    <pre class="step-code"><code>&#123;% with msgs = get_flashed_messages(with_categories=true) %&#125;
+  &#123;% for cat, msg in msgs %&#125;...&#123;% endfor %&#125;
+&#123;% endwith %&#125;</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
