@@ -254,47 +254,6 @@
         </div>
     </section>
 
-    <!-- Query Parameters Explanation Card -->
-    <section class="code-preview-card query-params-guide" id="query-params-guide" aria-label="Query Parameters Architecture">
-        <div class="code-header">
-            <div class="window-dots">
-                <span class="dot red"></span>
-                <span class="dot yellow"></span>
-                <span class="dot green"></span>
-            </div>
-            <span class="file-name">How URL Query Parameters Work in Flask</span>
-            <span class="copy-btn">Flask request.args</span>
-        </div>
-        <div class="query-params-body">
-            <p class="query-params-heading">
-                Query Parameters (GET parameters) explained:
-            </p>
-            <ol class="query-params-list">
-                <li>
-                    <strong class="step-title-cyan">1. In the URL:</strong>
-                    Parameters are appended after a question mark: <code>/service?tier=pro&amp;promo=save20</code>
-                </li>
-                <li>
-                    <strong class="step-title-primary">2. Reading in Python (main.py):</strong>
-                    Flask provides the <code>request.args</code> dictionary:
-                    <pre class="query-params-code"><code>tier = request.args.get("tier", default="all")
-promo = request.args.get("promo", default=None)</code></pre>
-                </li>
-                <li>
-                    <strong class="step-title-emerald">3. Generating in Templates (url_for):</strong>
-                    Pass extra arguments to <code>url_for()</code> and Flask automatically converts them into query strings:
-                    <pre class="query-params-code"><code>&lt;a href="{{ '{{' }} url_for('service', tier='pro', promo=discount_code) {{ '}}' }}"&gt;Pro Plan&lt;/a&gt;
-&lt;!-- Outputs: /service?tier=pro&amp;promo=FLASK20 --&gt;</code></pre>
-                </li>
-                <li>
-                    <strong class="step-title-amber">4. Pre-populating Form Input Boxes:</strong>
-                    Pass the query value into the template and bind it directly to the input's <code>value</code> attribute:
-                    <pre class="query-params-code"><code>&lt;input type="text" name="promo" value="{{ '{{' }} discount_code {{ '}}' }}"&gt;
-&lt;!-- When page loads without query params, default 'FLASK20' is pre-filled --&gt;</code></pre>
-                </li>
-            </ol>
-        </div>
-    </section>
 
     <!-- Call to Action Banner -->
     <section class="cta-banner" aria-label="Start Your Project">

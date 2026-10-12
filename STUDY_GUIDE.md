@@ -83,20 +83,30 @@ def contact():
 <summary><h3>04. URL Query Parameters (request.args.get)</h3></summary>
 
 #### Core Concept
-Query parameters are appended after `?` in the URL (e.g. `/service?tier=pro&promo=FLASK20`). Flask parses them into `request.args`. Use `request.args.get(key, default)` to safely retrieve values without throwing KeyError.
+Query parameters (GET parameters) pass key-value pairs in the URL string after a `?` delimiter (e.g. `/service?tier=pro&promo=FLASK20`). Flask parses them into the `request.args` dictionary. Use `request.args.get(key, default)` to safely retrieve values with default fallbacks without throwing `KeyError`.
 
-#### Key Code
-```python
-@app.route("/service")
-def service():
-    selected_tier = request.args.get("tier", default="all")
-    discount_code = request.args.get("promo", default="FLASK20").strip()
-    return render_template("service.html", selected_tier=selected_tier, discount_code=discount_code)
-```
+#### How URL Query Parameters Work in Flask (4 Steps):
+1. **In the URL:** Appended after a question mark: `/service?tier=pro&promo=FLASK20`
+2. **Reading in Python (`main.py`):** Flask provides the `request.args` dictionary:
+   ```python
+   tier = request.args.get("tier", default="all")
+   promo = request.args.get("promo", default="FLASK20")
+   ```
+3. **Generating in Templates (`url_for`):** Pass extra arguments and Flask converts them into query strings:
+   ```html
+   <a href="{{ url_for('service', tier='pro', promo=discount_code) }}">Pro Plan</a>
+   <!-- Generates: /service?tier=pro&promo=FLASK20 -->
+   ```
+4. **Pre-populating Form Input Boxes:** Bind the variable to the input's `value` attribute:
+   ```html
+   <input type="text" name="promo" value="{{ discount_code }}">
+   <!-- Displays active or default promo code in the input box -->
+   ```
 
 #### Where to Find in Codebase
 - File: [main.py](https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py#L96-L125)
 - Template: [template/service.html](https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/service.html#L84-L140)
+- Interactive Study Topic: [template/study.html](https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/study.html#L152-L195)
 
 </details>
 

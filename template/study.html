@@ -162,25 +162,35 @@ def contact():
                 </div>
             </summary>
             <div class="accordion-body">
-                <p><strong>Concept:</strong> Query parameters are appended to the URL after a <code>?</code> (e.g. <code>/service?tier=pro&promo=FLASK20</code>). Flask parses them into the <code>request.args</code> dictionary. Use <code>request.args.get(key, default)</code> to safely read them with default fallbacks.</p>
+                <p><strong>Concept:</strong> Query parameters (GET parameters) pass key-value pairs in the URL string after a <code>?</code> delimiter (e.g., <code>/service?tier=pro&promo=FLASK20</code>). Flask parses them into the <code>request.args</code> dictionary. Use <code>request.args.get(key, default)</code> to safely access values with default fallbacks.</p>
                 <div class="code-block-wrapper">
                     <div class="code-header-bar">
-                        <span>main.py (Service route)</span>
+                        <span>How Query Parameters Work in Flask (4 Core Steps)</span>
                     </div>
-                    <pre><code>@app.route("/service")
-def service():
-    # Read query parameters with fallbacks
-    selected_tier = request.args.get("tier", default="all")
-    discount_code = request.args.get("promo", default="FLASK20").strip()
-    
-    return render_template(
-        "service.html",
-        selected_tier=selected_tier,
-        discount_code=discount_code
-    )</code></pre>
+                    {% raw %}
+                    <pre><code># 1. In the URL:
+# Parameters are appended after a question mark:
+# http://127.0.0.1:5000/service?tier=pro&promo=FLASK20
+
+# 2. Reading in Python (main.py):
+tier = request.args.get("tier", default="all")
+promo = request.args.get("promo", default="FLASK20")
+
+# 3. Generating in Templates (url_for):
+&lt;a href="{{ url_for('service', tier='pro', promo='FLASK20') }}"&gt;Pro Plan&lt;/a&gt;
+&lt;!-- Outputs: /service?tier=pro&amp;promo=FLASK20 --&gt;
+
+# 4. Pre-populating Form Input Boxes:
+&lt;input type="text" name="promo" value="{{ discount_code }}"&gt;
+&lt;!-- When page loads, the query value is pre-filled into the input box --&gt;</code></pre>
+                    {% endraw %}
                 </div>
                 <div class="file-reference-box">
                     <strong>📍 Implemented in:</strong> <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/main.py">main.py</a> and <a href="https://github.com/Shrikant92Bhatt/python-flask/blob/main/template/service.html">template/service.html</a>
+                    <div class="study-quick-links">
+                        <a href="{{ url_for('service', tier='pro', promo='FLASK20') }}" target="_blank" class="btn btn-secondary study-quick-btn">Try /service?tier=pro&promo=FLASK20 →</a>
+                        <a href="{{ url_for('service', tier='starter', promo='SUMMER50') }}" target="_blank" class="btn btn-secondary study-quick-btn">Try /service?tier=starter&promo=SUMMER50 →</a>
+                    </div>
                 </div>
             </div>
         </details>
