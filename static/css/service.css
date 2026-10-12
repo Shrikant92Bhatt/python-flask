@@ -172,31 +172,71 @@
 
 .promo-form {
   display: flex;
-  gap: 0.6rem;
-  align-items: center;
+  gap: 0.65rem;
+  align-items: stretch;
   flex-wrap: wrap;
 }
 
 .promo-input-wrapper {
-  flex: 1;
+  flex: 1 1 220px;
   min-width: 200px;
+  position: relative;
 }
 
 .promo-input {
+  width: 100%;
+  height: 44px;
+  padding: 0.65rem 1.1rem;
+  font-size: 0.95rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
   text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  border-radius: var(--radius-md);
+  color: #f8fafc;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+  transition: all var(--transition-fast);
+  outline: none;
+  box-sizing: border-box;
   margin-bottom: 0;
 }
 
+.promo-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25), inset 0 2px 4px rgba(0, 0, 0, 0.25);
+  background: rgba(15, 23, 42, 0.95);
+}
+
+.promo-input::placeholder {
+  text-transform: none;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  letter-spacing: normal;
+  color: var(--text-dim);
+}
+
 .btn-promo-apply {
-  padding: 0.75rem 1.35rem;
+  height: 44px;
+  padding: 0 1.35rem;
   font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .btn-promo-reset {
-  padding: 0.75rem 1rem;
+  height: 44px;
+  padding: 0 1rem;
   font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .promo-pills-row {
