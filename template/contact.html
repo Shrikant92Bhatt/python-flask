@@ -32,7 +32,9 @@
                 <div class="contact-item-content">
                     <h3>Email Address</h3>
                     <p id="contact-email-text">hello@flaskcraft.dev</p>
-                    <button type="button" class="copy-btn copy-btn-spaced" id="btn-copy-email" onclick="copyEmail()">Copy Email</button>
+                    <button type="button" class="copy-btn copy-btn-spaced" id="btn-copy-email" onclick="copyEmail()">
+                        <span>📋</span> Copy Email
+                    </button>
                 </div>
             </div>
 
@@ -141,12 +143,12 @@
     function copyEmail() {
         navigator.clipboard.writeText('hello@flaskcraft.dev').then(() => {
             const btn = document.getElementById('btn-copy-email');
-            const originalText = btn.textContent;
-            btn.textContent = 'Copied! ✨';
-            btn.style.color = '#10b981';
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span>✨</span> Copied!';
+            btn.classList.add('copied');
             setTimeout(() => {
-                btn.textContent = originalText;
-                btn.style.color = '';
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('copied');
             }, 2000);
         }).catch(err => {
             console.error('Failed to copy email:', err);
